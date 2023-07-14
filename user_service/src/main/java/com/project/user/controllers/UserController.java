@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -29,6 +31,7 @@ import com.project.user.exceptions.InvalidCredentialsException;
 import com.project.user.exceptions.UserNotLoggedInException;
 import com.project.user.payloads.ApiResponse;
 import com.project.user.payloads.FileResponse;
+import com.project.user.payloads.PasswordDTO;
 import com.project.user.services.FileService;
 import com.project.user.services.UserService;
 
@@ -50,9 +53,12 @@ public class UserController {
 	private String path;
 	
 	
+	Logger logger = LoggerFactory.getLogger(UserController.class);
+	
 	@PostMapping("/users")
 	public ResponseEntity<User> createNewUser(@Valid @RequestBody User user) throws InvalidCredentialsException{
 		User createNewUser = this.userService.createNewUser(user);
+		logger.info("Created User is {}",createNewUser);
 		return new ResponseEntity<User>(createNewUser,HttpStatus.CREATED);
 		
 	}
@@ -68,6 +74,7 @@ public class UserController {
 	public ResponseEntity<User> updateUser(@PathVariable("userId")Long userId,@Valid @RequestBody User user) throws ForbiddenRequestException{
 		
 		User updatedUser = this.userService.updateUser(user, userId);
+		logger.info("Updated user is {}",updatedUser);
 		return new ResponseEntity<User>(updatedUser,HttpStatus.ACCEPTED);
 	}
 	
@@ -76,6 +83,7 @@ public class UserController {
 	public ResponseEntity<User> getUserById(@PathVariable Long userId) throws ForbiddenRequestException{
 		
 		User userById = this.userService.getUserById(userId);
+		logger.info("Requested user details {}",userById);
 		return new ResponseEntity<User>(userById,HttpStatus.OK);
 	}
 	
@@ -147,6 +155,13 @@ public void DownloadImage(@PathVariable Long userId, HttpServletResponse respons
 		response.setContentType(MediaType.IMAGE_JPEG_VALUE);
 		StreamUtils.copy(resource, response.getOutputStream());
 }
+	
+	//change password functionality
+	@PostMapping("/users/changePassword/{userId}")
+	public ResponseEntity<ApiResponse> changePassword(@PathVariable Long userId,@RequestBody PasswordDTO passwordObject) throws ForbiddenRequestException, InvalidCredentialsException{
+		this.userService.changePassword(userId,passwordObject);
+		return new ResponseEntity<ApiResponse>(new ApiResponse("Password is changed successfully",true),HttpStatus.ACCEPTED);
+	}
 	
  	
 }

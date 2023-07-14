@@ -44,11 +44,6 @@ public class User {
 	private String about;
 	
 	private String profileImage;
-	
-	
-	@Transient
-	private List<ReviewDto> reviews;
-
 
 	public Long getUserId() {
 		return userId;
@@ -99,29 +94,17 @@ public class User {
 		this.role = role;
 	}
 
-
-	public List<ReviewDto> getReviews() {
-		return reviews;
-	}
-
-
-	public void setReviews(List<ReviewDto> reviews) {
-		this.reviews = reviews;
-	}
-
-
 	public User(Long userId,
 			@NotBlank(message = "Name must not be blank") @Size(min = 2, max = 20, message = "Minimum 2 and Maximum 20 characters are allowed!!!") String name,
 			@NotBlank(message = "Email must not be blank") @Pattern(regexp = "^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$", message = "Invalid Email!") String email,
 			@NotBlank(message = "Password must not be empty") @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&-+=()])(?=\\S+$).{8,}$", message = "Password must contain atleast 1 uppercase, 1 lowercase, 1 special character and 1 digit ") String password,
-			Integer role,String about,String profileImage, List<ReviewDto> reviews) {
+			Integer role,String about,String profileImage) {
 		super();
 		this.userId = userId;
 		this.name = name;
 		this.email = email;
 		this.password = password;
 		this.role = role;
-		this.reviews = reviews;
 		this.about = about;
 		this.profileImage = profileImage;
 	}
@@ -135,8 +118,8 @@ public class User {
 
 	@Override
 	public String toString() {
-		return "User [userId=" + userId + ", name=" + name + ", email=" + email + ", password=" + password + ", role="
-				+ role + ", reviews=" + reviews + ", about=" + about +  "]";
+		return "User [userId=" + userId + ", name=" + name + ", email=" + email + ", role="
+				+ role + ", about=" + about +  "]";
 	}
 
 

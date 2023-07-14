@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -17,6 +18,7 @@ import com.project.user.exceptions.ForbiddenRequestException;
 import com.project.user.exceptions.InvalidCredentialsException;
 import com.project.user.exceptions.ResourceNotFoundException;
 import com.project.user.exceptions.UserNotLoggedInException;
+import com.project.user.payloads.PasswordDTO;
 import com.project.user.payloads.ReviewDto;
 import com.project.user.repositories.UserRepository;
 import com.project.user.services.AuthService;
@@ -46,11 +48,17 @@ public class UserServiceImpl implements UserService {
 	public User createNewUser(User user) throws InvalidCredentialsException {
 		User findUserByEmail = this.userRepository.findUserByEmail(user.getEmail());
 		
+		//logging user coming from client
+		logger.info("User sent the data: {}",findUserByEmail);
+		
 		if(findUserByEmail!=null)
 			throw new InvalidCredentialsException("Email is already in use...Please try some other email");
 		
 		user.setRole(0);
+//		user.setProfileImage("user.png");
+		logger.debug("Role is set successfully");
 		User newUser = userRepository.save(user);
+		logger.debug("The created user is {}",newUser);
 		return newUser;
 	}
 
@@ -59,6 +67,7 @@ public class UserServiceImpl implements UserService {
 	public User updateUser(User user, Long userId) throws ForbiddenRequestException {
 		if(!AuthStorage.isUserLoggedIn(userId)) {
 //			System.out.println(AuthStorage.LOGGED_IN_USER_DATA.get(AuthStorage.USER).getUserId());
+			logger.warn("User is not allowed to access this feature with userId {}",userId);
 			throw new ForbiddenRequestException();
 		}
 		
@@ -71,6 +80,7 @@ public class UserServiceImpl implements UserService {
 		user.setUserId(userId);
 		user.setRole(reqUser.getRole());
 		User updatedUser = userRepository.save(user);
+		logger.debug("The updated user datails is: {}",updatedUser);
 		return updatedUser;
 	}
 
@@ -80,6 +90,7 @@ public class UserServiceImpl implements UserService {
 	public User deleteUser(Long userId) throws ForbiddenRequestException {
 		if(!AuthStorage.isUserLoggedIn(userId)) {
 //			System.out.println(AuthStorage.LOGGED_IN_USER_DATA.get(AuthStorage.USER).getUserId());
+			logger.warn("User is not allowed to access this feature with userId {}",userId);
 			throw new ForbiddenRequestException();
 		}
 		
@@ -98,14 +109,12 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public User getUserById(Long userId) {
 
+		logger.info("The client requires user with id: {}",userId);
 		//Get user with user id from user database
 		User user = userRepository.findById(userId)
 				.orElseThrow(()->new ResourceNotFoundException("User", "userId", userId));
 		
-				
-		List<ReviewDto> reviews = this.getReviewByUserId(userId);
-		logger.info("{}",reviews);
-		user.setReviews(reviews);
+		logger.debug("User data requested: {}",user);
 		return user; 
 	}
 
@@ -117,26 +126,7 @@ public class UserServiceImpl implements UserService {
 //		}
 
 		List<User> allUsers = userRepository.findAll();
-		allUsers.forEach(user->{
-			Long userId = user.getUserId();
-			List<ReviewDto> reviewsArr = this.getReviewByUserId(userId);
-			user.setReviews(reviewsArr);
-		});
 		return allUsers;
-	}
-	
-	//service mthod to pull all reviews of a user from movie microservice
-	private List<ReviewDto> getReviewByUserId(Long userId) {
-	
-		//Get the reviews from Movie Microservice
-				 List<Object> forObject = restTemplate.getForObject("http://movie-service/movies/reviews/user/"+userId, List.class);
-				 List<ReviewDto> reviews = new ArrayList<>();
-				forObject.forEach((obj)->{
-					System.out.println(obj);
-					ReviewDto dto = getDto(obj);
-					reviews.add(dto);
-				});
-				return reviews;
 	}
 
 	//Service method for getting users by username
@@ -149,12 +139,6 @@ public class UserServiceImpl implements UserService {
 		if(findUserByUserName.isEmpty()) {
 			throw new ResourceNotFoundException("Users", "userName", userName);
 		}
-
-		findUserByUserName.forEach(user->{
-			Long userId = user.getUserId();
-			List<ReviewDto> reviews = this.getReviewByUserId(userId);
-			user.setReviews(reviews);
-		});
 		return findUserByUserName;
 		
 
@@ -180,7 +164,36 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public User getUserService(Long userId) {
 		User findById = this.userRepository.findById(userId).orElse(null);
+		System.out.println(findById);
 		return findById;
+	}
+
+	@Override
+	public User changePassword(Long userId, PasswordDTO passwordObject) throws ForbiddenRequestException, InvalidCredentialsException {
+		if(!AuthStorage.isUserLoggedIn(userId)) {
+//			System.out.println(AuthStorage.LOGGED_IN_USER_DATA.get(AuthStorage.USER).getUserId());
+			logger.warn("User is not allowed to access this feature with userId {}",userId);
+			throw new ForbiddenRequestException();
+		}
+		
+		User userByEmail = this.userRepository.findUserByEmail(passwordObject.getEmail());
+		
+		if(userByEmail==null) {
+			logger.warn("User is not present in database with email {}",passwordObject.getEmail());
+			throw new InvalidCredentialsException("Email is not present or wrong!");
+		}
+		
+		if(!userByEmail.getPassword().equals(passwordObject.getOldPassword())) {
+			logger.warn("User password doesn't match with old password for userId {}",userId);
+			throw new InvalidCredentialsException("Given password is wrong, can't change to new password");
+		}
+		
+		logger.debug("The user whose password to be changed is {}",userByEmail);
+		userByEmail.setPassword(passwordObject.getNewPassword());
+		
+		User save = this.userRepository.save(userByEmail);
+		logger.debug("The user with changed password is {}",save);
+		return save;
 	}
 	
 }

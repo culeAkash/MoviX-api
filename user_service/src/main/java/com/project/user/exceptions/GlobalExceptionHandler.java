@@ -3,6 +3,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -24,6 +26,9 @@ import com.project.user.payloads.ApiResponse;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+	
+	
+	Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 	
 	
 	//Exception for hadnling HttpBadRequests
@@ -56,6 +61,7 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(ResourceNotFoundException.class)
 	public ResponseEntity<ApiResponse> resourceNotFoundExceptionHandler(ResourceNotFoundException e) {
+		logger.warn("The resource requested doesn't exist");
 		final String message = e.getMessage();
 		final ApiResponse apiResponse = new ApiResponse(message, false);
 		return new ResponseEntity<ApiResponse>(apiResponse, HttpStatus.NOT_FOUND);
@@ -88,6 +94,8 @@ public class GlobalExceptionHandler {
 	
 	@ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity <ApiResponse> handleNoHandlerFoundException(NoHandlerFoundException ex) {
+		
+		logger.warn("No handler is found for this url in the service application");
         ApiResponse apiResponse = new ApiResponse(ex.getMessage(), false);
         
         return new ResponseEntity<ApiResponse>(apiResponse, HttpStatus.NOT_FOUND);

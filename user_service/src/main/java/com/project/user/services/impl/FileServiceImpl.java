@@ -9,6 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +22,7 @@ import com.project.user.services.FileService;
 @Service
 public class FileServiceImpl implements FileService {
 	
+	Logger logger = LoggerFactory.getLogger(FileServiceImpl.class);
 	
 	@Autowired
 	private UserServiceImpl userService;
@@ -29,6 +32,7 @@ public class FileServiceImpl implements FileService {
 
 		if(!AuthStorage.isUserLoggedIn(userId)) {
 //			System.out.println(AuthStorage.LOGGED_IN_USER_DATA.get(AuthStorage.USER).getUserId());
+			logger.warn("User is not allowed to change image of user with userId {}",userId);
 			throw new ForbiddenRequestException();
 		}
 		// get file name

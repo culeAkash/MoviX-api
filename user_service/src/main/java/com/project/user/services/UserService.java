@@ -6,6 +6,7 @@ import com.project.user.entities.User;
 import com.project.user.exceptions.ForbiddenRequestException;
 import com.project.user.exceptions.InvalidCredentialsException;
 import com.project.user.exceptions.UserNotLoggedInException;
+import com.project.user.payloads.PasswordDTO;
 
 public interface UserService {
 
@@ -26,5 +27,7 @@ public User createNewUser(User user) throws InvalidCredentialsException;
 	Boolean confirmUserService(Long userId);
 
 	User getUserService(Long userId);
+
+	public User changePassword(Long userId, PasswordDTO passwordObject) throws ForbiddenRequestException, InvalidCredentialsException;
 	
 }
