@@ -9,11 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StreamUtils;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,14 +22,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.project.user.auth.AuthStorage;
 import com.project.user.entities.User;
-import com.project.user.exceptions.ForbiddenRequestException;
-import com.project.user.exceptions.InvalidCredentialsException;
-import com.project.user.exceptions.UserNotLoggedInException;
 import com.project.user.payloads.ApiResponse;
 import com.project.user.payloads.FileResponse;
-import com.project.user.payloads.PasswordDTO;
 import com.project.user.services.FileService;
 import com.project.user.services.UserService;
 
@@ -56,7 +49,7 @@ public class UserController {
 	Logger logger = LoggerFactory.getLogger(UserController.class);
 	
 	@PostMapping("/users")
-	public ResponseEntity<User> createNewUser(@Valid @RequestBody User user) throws InvalidCredentialsException{
+	public ResponseEntity<User> createNewUser(@Valid @RequestBody User user){
 		User createNewUser = this.userService.createNewUser(user);
 		logger.info("Created User is {}",createNewUser);
 		return new ResponseEntity<User>(createNewUser,HttpStatus.CREATED);
@@ -64,14 +57,14 @@ public class UserController {
 	}
 	
 	@DeleteMapping("/users/{userId}")
-	public ResponseEntity<ApiResponse> deleteUser(@PathVariable Long userId) throws ForbiddenRequestException{
+	public ResponseEntity<ApiResponse> deleteUser(@PathVariable Long userId){
 		User deleteUser = this.userService.deleteUser(userId);
 		return new ResponseEntity<ApiResponse>(new ApiResponse("User has been deleted successfully,Please Login",true),HttpStatus.ACCEPTED);
 	}
 	
 
 	@PutMapping("/users/{userId}")
-	public ResponseEntity<User> updateUser(@PathVariable("userId")Long userId,@Valid @RequestBody User user) throws ForbiddenRequestException{
+	public ResponseEntity<User> updateUser(@PathVariable("userId")Long userId,@Valid @RequestBody User user){
 		
 		User updatedUser = this.userService.updateUser(user, userId);
 		logger.info("Updated user is {}",updatedUser);
@@ -80,7 +73,7 @@ public class UserController {
 	
 	//Get single user by id
 	@GetMapping("/users/{userId}")
-	public ResponseEntity<User> getUserById(@PathVariable Long userId) throws ForbiddenRequestException{
+	public ResponseEntity<User> getUserById(@PathVariable Long userId){
 		
 		User userById = this.userService.getUserById(userId);
 		logger.info("Requested user details {}",userById);
@@ -88,15 +81,15 @@ public class UserController {
 	}
 	
 	
-	@GetMapping("/users")
-	public ResponseEntity<List<User>> getAllUsers() throws UserNotLoggedInException{
+	@GetMapping("/users/public")
+	public ResponseEntity<List<User>> getAllUsers(){
 				List<User> allUsers = this.userService.getAllUsers();
 		return new ResponseEntity<>(allUsers,HttpStatus.OK);
 	}
 	
 	
 	@GetMapping("/users/userByName/{userName}")
-	public ResponseEntity<List<User>> getAllUsersByUserName(@PathVariable String userName) throws UserNotLoggedInException{
+	public ResponseEntity<List<User>> getAllUsersByUserName(@PathVariable String userName){
 		
 		
 		List<User> usersByUserName = this.userService.getUsersByUserName(userName);
@@ -117,21 +110,10 @@ public class UserController {
 		return user;
 	}
 	
-	@GetMapping("/services/users/getLoggedIn/role")
-	public String checkRoleOfLoggedInUser() {
-		String userLoggedIn = AuthStorage.isUserLoggedIn();
-		return userLoggedIn;
-	}
-	
-	@GetMapping("/services/users/isLoggedIn/{userId}")
-	public Boolean checkIfUserIsLoggedIn(@PathVariable Long userId) {
-		return AuthStorage.isUserLoggedIn(userId);
-	}
-	
 	
 	//Controllers to upload and get profile images
 	@PostMapping("/users/image/upload/{userId}")
-	public ResponseEntity<FileResponse<User>> postImage(@RequestParam("image") MultipartFile image,@PathVariable Long userId) throws IOException, ForbiddenRequestException{
+	public ResponseEntity<FileResponse<User>> postImage(@RequestParam("image") MultipartFile image,@PathVariable Long userId) throws IOException{
 		User user = this.userService.getUserById(userId);
 		
 		String uploadImage = this.fileService.uploadImage(this.path , image,userId);// here we will handle exception using
@@ -148,20 +130,13 @@ public class UserController {
 	@GetMapping(value = "/users/image/{userId}", produces = MediaType.IMAGE_JPEG_VALUE) // on firing this url in the
 	// browser image will get
 	// displayed
-public void DownloadImage(@PathVariable Long userId, HttpServletResponse response) throws IOException, ForbiddenRequestException {
+public void DownloadImage(@PathVariable Long userId, HttpServletResponse response) throws IOException{
 		User user = this.userService.getUserById(userId);
 		String imageUrl = user.getProfileImage();
 		InputStream resource = this.fileService.getResource(this.path, imageUrl);
 		response.setContentType(MediaType.IMAGE_JPEG_VALUE);
 		StreamUtils.copy(resource, response.getOutputStream());
 }
-	
-	//change password functionality
-	@PostMapping("/users/changePassword/{userId}")
-	public ResponseEntity<ApiResponse> changePassword(@PathVariable Long userId,@RequestBody PasswordDTO passwordObject) throws ForbiddenRequestException, InvalidCredentialsException{
-		this.userService.changePassword(userId,passwordObject);
-		return new ResponseEntity<ApiResponse>(new ApiResponse("Password is changed successfully",true),HttpStatus.ACCEPTED);
-	}
 	
  	
 }

@@ -1,8 +1,6 @@
 package com.project.movie;
 
-import static org.hamcrest.CoreMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -24,7 +22,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.movie.controllers.MovieController;
 import com.project.movie.entities.Movie;
-import com.project.movie.exceptions.ForbiddenRequestException;
 import com.project.movie.services.FileService;
 import com.project.movie.services.MovieService;
 

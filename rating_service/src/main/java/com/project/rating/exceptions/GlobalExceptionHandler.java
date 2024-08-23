@@ -65,13 +65,6 @@ public class GlobalExceptionHandler {
 	}
 
 
-	@ExceptionHandler(ForbiddenRequestException.class)
-	public ResponseEntity<ApiResponse> handlerForbiddenRequest(ForbiddenRequestException e) {
-		final ApiResponse response = new ApiResponse(e.getMessage(), false);
-		return new ResponseEntity<ApiResponse>(response, HttpStatus.UNAUTHORIZED);
-	}
-
-
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
 	public ResponseEntity<ApiResponse> handlerMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex){
 		String error =

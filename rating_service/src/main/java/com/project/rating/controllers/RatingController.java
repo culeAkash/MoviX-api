@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.project.rating.entities.Rating;
-import com.project.rating.exceptions.ForbiddenRequestException;
 import com.project.rating.payloads.ApiResponse;
 import com.project.rating.payloads.MovieRatingResponse;
 import com.project.rating.services.RatingService;
@@ -36,7 +35,7 @@ public class RatingController {
 	}
 
 	@GetMapping("/ratings/user/{userId}/movie/{movieId}")
-	public ResponseEntity<Double> getRatingOfUserOnMovie(@PathVariable Long userId,@PathVariable Long movieId) throws ForbiddenRequestException{
+	public ResponseEntity<Double> getRatingOfUserOnMovie(@PathVariable Long userId,@PathVariable Long movieId){
 		logger.info("The client demands rating of movie with movieId {} given by user with userId {}",movieId,userId);
 		Double ratingOfMovieByUser = ratingService.getRatingOfMovieByUser(userId, movieId);
 		logger.debug("The response rating is {}",ratingOfMovieByUser);
@@ -44,7 +43,7 @@ public class RatingController {
 	}
 
 	@PostMapping("/ratings/user/{userId}/movie/{movieId}")
-	public ResponseEntity<ApiResponse> addOrUpdateNewRating(@Valid @RequestBody Rating rating,@PathVariable Long userId,@PathVariable Long movieId) throws ForbiddenRequestException{
+	public ResponseEntity<ApiResponse> addOrUpdateNewRating(@Valid @RequestBody Rating rating,@PathVariable Long userId,@PathVariable Long movieId){
 		ratingService.createNewRating(userId, movieId,rating);
 		return new ResponseEntity<ApiResponse>(new ApiResponse("New Rating is created",true),HttpStatus.CREATED);
 	}

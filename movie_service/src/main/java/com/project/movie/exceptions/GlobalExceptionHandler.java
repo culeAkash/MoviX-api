@@ -61,19 +61,6 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ApiResponse> ioExceptionHandler(IOException ex){
 		return new ResponseEntity<ApiResponse>(new ApiResponse("File is not present",false),HttpStatus.NOT_FOUND);
 	}
-
-	
-	@ExceptionHandler(ForbiddenRequestException.class)
-	public ResponseEntity<ApiResponse> handlerForbiddenRequest(ForbiddenRequestException e) {
-		final ApiResponse response = new ApiResponse(e.getMessage(), false);
-		return new ResponseEntity<ApiResponse>(response, HttpStatus.UNAUTHORIZED);
-	}
-	
-	@ExceptionHandler(UserNotLoggedInException.class)
-	public ResponseEntity<ApiResponse> handlerUserNotLoggedInException(UserNotLoggedInException ex){
-		ApiResponse response = new ApiResponse(ex.getMessage(),false);
-		return new ResponseEntity<ApiResponse>(response,HttpStatus.UNAUTHORIZED);
-	}
 	
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
 	public ResponseEntity<ApiResponse> handlerMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex){

@@ -2,7 +2,6 @@ package com.project.user;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 //import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
@@ -25,14 +24,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.user.controllers.UserController;
 import com.project.user.entities.User;
-import com.project.user.exceptions.ForbiddenRequestException;
-import com.project.user.exceptions.InvalidCredentialsException;
-import com.project.user.payloads.PasswordDTO;
 import com.project.user.services.FileService;
 import com.project.user.services.impl.UserServiceImpl;
 

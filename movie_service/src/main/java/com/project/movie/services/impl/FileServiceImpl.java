@@ -13,9 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.project.movie.exceptions.ForbiddenRequestException;
 import com.project.movie.services.FileService;
-import com.project.movie.services.MovieService;
 
 @Service
 public class FileServiceImpl implements FileService {
@@ -25,10 +23,7 @@ public class FileServiceImpl implements FileService {
 	private MovieServiceImpl movieService;
 
 	@Override
-	public String uploadImage(String path, MultipartFile file) throws IOException, ForbiddenRequestException {
-
-		if(movieService.checkUserRoleFromUserService())
-			throw new ForbiddenRequestException("admin");
+	public String uploadImage(String path, MultipartFile file) throws IOException {
 		// get file name
 		String name = file.getOriginalFilename();
 		// hello.png

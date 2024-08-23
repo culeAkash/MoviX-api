@@ -39,25 +39,6 @@ public class GlobalExceptionHandler {
 		}
 
 
-	@ExceptionHandler(InvalidCredentialsException.class)
-	public ResponseEntity<ApiResponse> handlerInvalidCredentialsException(InvalidCredentialsException e) {
-		final ApiResponse response = new ApiResponse(e.getMessage(), false);
-		return new ResponseEntity<ApiResponse>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-	}
-	
-	@ExceptionHandler(ForbiddenRequestException.class)
-	public ResponseEntity<ApiResponse> handlerForbiddenRequest(ForbiddenRequestException e) {
-		final ApiResponse response = new ApiResponse(e.getMessage(), false);
-		return new ResponseEntity<ApiResponse>(response, HttpStatus.UNAUTHORIZED);
-	}
-	
-	@ExceptionHandler(UserNotLoggedInException.class)
-	public ResponseEntity<ApiResponse> handlerUserNotLoggedInException(UserNotLoggedInException ex){
-		ApiResponse response = new ApiResponse(ex.getMessage(),false);
-		return new ResponseEntity<ApiResponse>(response,HttpStatus.UNAUTHORIZED);
-	}
-
-
 
 	@ExceptionHandler(ResourceNotFoundException.class)
 	public ResponseEntity<ApiResponse> resourceNotFoundExceptionHandler(ResourceNotFoundException e) {

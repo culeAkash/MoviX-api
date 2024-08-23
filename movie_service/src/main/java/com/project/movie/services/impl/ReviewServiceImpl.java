@@ -6,15 +6,12 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.project.movie.entities.Movie;
 import com.project.movie.entities.Review;
-import com.project.movie.exceptions.ForbiddenRequestException;
 import com.project.movie.exceptions.ResourceNotFoundException;
-import com.project.movie.exceptions.UserNotLoggedInException;
 import com.project.movie.payloads.UserDto;
 import com.project.movie.repositories.MovieRepository;
 import com.project.movie.repositories.ReviewRepository;
@@ -67,17 +64,11 @@ public class ReviewServiceImpl implements ReviewService {
 	}
 
 	@Override
-	public Review updateReview(Long reviewId,Review review) throws ForbiddenRequestException {
+	public Review updateReview(Long reviewId,Review review){
 		Review req = reviewRepository.findById(reviewId)
 				.orElseThrow(()->new ResourceNotFoundException("Review", "reviewId", reviewId));
 		Long userId = req.getUserId();
-		
-		
-		//check if loggedIn user can do this operation
-		if(!checkIfLoggedInUserAllowed(userId)) {
-			logger.warn("User with userId {} has to be logged in to perform this action",userId);
-			throw new ForbiddenRequestException();
-		}		
+
 		
 		req.setReviewContent(review.getReviewContent());
 		reviewRepository.save(req);
@@ -85,7 +76,7 @@ public class ReviewServiceImpl implements ReviewService {
 	}
 
 	@Override
-	public void deleteReview(Long reviewId) throws ForbiddenRequestException {
+	public void deleteReview(Long reviewId){
 		
 		Review review = reviewRepository.findById(reviewId)
 				.orElseThrow(()->new ResourceNotFoundException("Review", "reviewId", reviewId));
@@ -96,7 +87,7 @@ Long userId = review.getUserId();
 	}
 
 	@Override
-	public Review createReview(Review review,Long movieId,Long userId) throws ForbiddenRequestException {
+	public Review createReview(Review review,Long movieId,Long userId){
 		Movie movie = movieRepository.findById(movieId)
 				.orElseThrow(()->new ResourceNotFoundException("Movie", "movieId", movieId));
 
@@ -110,11 +101,6 @@ Long userId = review.getUserId();
 		//		review.setReviewId(count++);
 		//		movie.getReviews().add(review);
 		//		user.getReviewsAdded().add(review);,
-		
-		
-		//check if loggedIn user can do this operation
-		if(!checkIfLoggedInUserAllowed(userId))
-			throw new ForbiddenRequestException();
 		
 		review.setUserId(userId);
 
@@ -144,11 +130,6 @@ Long userId = review.getUserId();
 		});
 		
 		return findReviewByUserId;
-	}
-	
-	public Boolean checkIfLoggedInUserAllowed(Long userId) {
-		Boolean role = this.restTemplate.getForObject("http://user-service/services/users/isLoggedIn/"+userId, Boolean.class);
-		return role;
 	}
 		
 

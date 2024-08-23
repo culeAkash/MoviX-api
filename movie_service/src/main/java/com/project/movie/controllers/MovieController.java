@@ -4,13 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import org.hibernate.validator.internal.util.logging.LoggerFactory;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StreamUtils;
@@ -25,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.project.movie.entities.Movie;
-import com.project.movie.exceptions.ForbiddenRequestException;
 import com.project.movie.payloads.FileResponse;
 import com.project.movie.services.FileService;
 import com.project.movie.services.MovieService;
@@ -51,7 +48,7 @@ public class MovieController {
 	Logger logger = org.slf4j.LoggerFactory.getLogger(MovieController.class);
 
 	@PostMapping("/movies")
-	public ResponseEntity<Movie> createNewMovie(@Valid @RequestBody Movie movie) throws ForbiddenRequestException{
+	public ResponseEntity<Movie> createNewMovie(@Valid @RequestBody Movie movie){
 		logger.debug("The sent movie data by client is {}",movie);
 		Movie newMovie = movieService.createNewMovie(movie);
 		logger.debug("The created movie is {}",newMovie);
@@ -59,7 +56,7 @@ public class MovieController {
 	}
 
 	@DeleteMapping("/movies/{movieId}")
-	public ResponseEntity<Movie> deleteMovie(@PathVariable("movieId")Long movieId) throws ForbiddenRequestException{
+	public ResponseEntity<Movie> deleteMovie(@PathVariable("movieId")Long movieId){
 		Movie res = movieService.deleteMovie(movieId);
 		return new ResponseEntity<Movie>(res,HttpStatus.ACCEPTED);
 	}
@@ -87,7 +84,7 @@ public class MovieController {
 
 
 	@PutMapping("/movies/{movieId}")
-	public ResponseEntity<Movie> updateMovie(@PathVariable("movieId")Long movieId,@Valid @RequestBody Movie movie) throws ForbiddenRequestException{
+	public ResponseEntity<Movie> updateMovie(@PathVariable("movieId")Long movieId,@Valid @RequestBody Movie movie){
 		logger.debug("The movie is to be updated has movieId {}",movieId);
 		Movie response = movieService.updateMovie(movieId, movie);
 		logger.debug("The updated movie is {}",response);
@@ -98,7 +95,7 @@ public class MovieController {
 	
 	
 	@PostMapping("/movies/image/upload/{movieId}")
-	public ResponseEntity<FileResponse<Movie>> postImage(@RequestParam("image") MultipartFile image,@PathVariable Long movieId) throws IOException, ForbiddenRequestException{
+	public ResponseEntity<FileResponse<Movie>> postImage(@RequestParam("image") MultipartFile image,@PathVariable Long movieId) throws IOException{
 		Movie movie = this.movieService.getMovieById(movieId);
 		
 		String uploadImage = this.fileService.uploadImage(this.path, image);// here we will handle exception using

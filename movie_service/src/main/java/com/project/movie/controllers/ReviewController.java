@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.project.movie.entities.Review;
-import com.project.movie.exceptions.ForbiddenRequestException;
 import com.project.movie.services.ReviewService;
 
 import jakarta.validation.Valid;
@@ -30,7 +29,7 @@ public class ReviewController {
 	private ReviewService reviewService;
 
 	@PostMapping("/movies/{movieId}/user/{userId}/reviews")
-	public ResponseEntity<Review> createReview(@Valid @RequestBody Review review,@PathVariable("movieId") Long movieId,@PathVariable("userId") Long userId) throws ForbiddenRequestException {
+	public ResponseEntity<Review> createReview(@Valid @RequestBody Review review,@PathVariable("movieId") Long movieId,@PathVariable("userId") Long userId) {
 		Review res = reviewService.createReview(review, movieId,userId);
 		return new ResponseEntity<Review>(res,HttpStatus.CREATED);
 
@@ -45,14 +44,14 @@ public class ReviewController {
 	}
 
 	@PutMapping("/movies/reviews/{reviewId}")
-	public ResponseEntity<Review> updateReview(@PathVariable Long reviewId,@Valid @RequestBody Review review) throws ForbiddenRequestException{
+	public ResponseEntity<Review> updateReview(@PathVariable Long reviewId,@Valid @RequestBody Review review){
 		Review res =  reviewService.updateReview(reviewId, review);
 		return new ResponseEntity<Review>(res,HttpStatus.OK);
 	}
 
 
 	@DeleteMapping("/movies/reviews/{reviewId}")
-	public ResponseEntity<String> deleteReview(@PathVariable Long reviewId) throws ForbiddenRequestException{
+	public ResponseEntity<String> deleteReview(@PathVariable Long reviewId){
 		reviewService.deleteReview(reviewId);
 		return new ResponseEntity<String>("Deleted Successfully",HttpStatus.ACCEPTED);
 

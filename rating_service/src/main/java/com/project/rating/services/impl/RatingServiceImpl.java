@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.project.rating.entities.Rating;
-import com.project.rating.exceptions.ForbiddenRequestException;
 import com.project.rating.exceptions.ResourceNotFoundException;
 import com.project.rating.payloads.MovieRatingResponse;
 import com.project.rating.repositories.RatingRepository;
@@ -63,11 +62,7 @@ public class RatingServiceImpl implements RatingService{
 	}
 
 	@Override
-	public Double getRatingOfMovieByUser(Long userId, Long movieId) throws ForbiddenRequestException {
-		//check if loggedIn user can do this operation
-		if(!checkIfLoggedInUserAllowed(userId)) {
-			throw new ForbiddenRequestException();
-		}
+	public Double getRatingOfMovieByUser(Long userId, Long movieId){
 
 
 		//first check if user is present
@@ -92,14 +87,7 @@ public class RatingServiceImpl implements RatingService{
 	}
 
 	@Override
-	public void createNewRating(Long userId, Long movieId,Rating rating) throws ForbiddenRequestException {
-
-		//check if loggedIn user can do this operation
-		if(!checkIfLoggedInUserAllowed(userId)) {
-			throw new ForbiddenRequestException();
-		}
-
-
+	public void createNewRating(Long userId, Long movieId,Rating rating){
 		//first check if user is present
 		Boolean isUserPresent = restTemplate.getForObject("http://user-service/services/users/confirmUserPresence/"+userId, Boolean.class);
 		if(!isUserPresent) {
@@ -127,12 +115,6 @@ public class RatingServiceImpl implements RatingService{
 		}
 
 
-	}
-
-
-	public Boolean checkIfLoggedInUserAllowed(Long userId) {
-		Boolean role = restTemplate.getForObject("http://user-service/services/users/isLoggedIn/"+userId, Boolean.class);
-		return role;
 	}
 
 

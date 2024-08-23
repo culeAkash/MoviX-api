@@ -1,28 +1,16 @@
 package com.project.movie.services.impl;
 
-import java.awt.FontFormatException;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.aspectj.weaver.loadtime.Options;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 
-import com.netflix.discovery.converters.Auto;
 import com.project.movie.entities.Movie;
-import com.project.movie.exceptions.ForbiddenRequestException;
 import com.project.movie.exceptions.ResourceNotFoundException;
 import com.project.movie.payloads.RatingDto;
 import com.project.movie.repositories.MovieRepository;
@@ -45,21 +33,13 @@ public class MovieServiceImpl implements MovieService {
 
 
 	@Override
-	public Movie createNewMovie(Movie movie) throws ForbiddenRequestException {
-		//only admin can create a movie after login
-		if(checkUserRoleFromUserService()) {
-			logger.warn("Only admin is allowed to access this functionality");
-			throw new ForbiddenRequestException("admin");}
-		
+	public Movie createNewMovie(Movie movie) {
 		Movie save = movieRepository.save(movie);
 		return save;
 	}
 
 	@Override
-	public Movie deleteMovie(Long movieId) throws ForbiddenRequestException {
-		//only admin can create a movie after login
-				if(checkUserRoleFromUserService())
-					throw new ForbiddenRequestException("admin");
+	public Movie deleteMovie(Long movieId) {
 		Movie req = movieRepository.findById(movieId)
 				.orElseThrow(()->new ResourceNotFoundException("Movie", "movieId", movieId));
 		
@@ -110,10 +90,7 @@ public class MovieServiceImpl implements MovieService {
 	}
 
 	@Override
-	public Movie updateMovie(Long movieId, Movie movie) throws ForbiddenRequestException {
-		//only admin can create a movie after login
-				if(checkUserRoleFromUserService())
-					throw new ForbiddenRequestException("admin");
+	public Movie updateMovie(Long movieId, Movie movie){
 		Movie updateMovie = movieRepository.findById(movieId)
 		.orElseThrow(()->new ResourceNotFoundException("Movie", "movieId", movieId));
 
@@ -122,12 +99,6 @@ public class MovieServiceImpl implements MovieService {
 		movieRepository.save(movie);
 		return movie;
 
-	}
-	
-	
-	public Boolean checkUserRoleFromUserService() {
-		String role = this.restTemplate.getForObject("http://user-service/services/users/getLoggedIn/role", String.class);
-		return !role.equals("admin");
 	}
 
 	@Override
