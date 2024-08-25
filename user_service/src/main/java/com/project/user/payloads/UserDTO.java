@@ -1,11 +1,11 @@
-package com.project.auth.payloads;
+package com.project.user.payloads;
 
-import com.project.auth.enums.Role;
+import com.project.user.enums.Role;
 import lombok.Data;
 
 @Data
 public class UserDTO {
-    private String userId;
+    private Long userId;
     private String name;
     private String email;
     private String about;

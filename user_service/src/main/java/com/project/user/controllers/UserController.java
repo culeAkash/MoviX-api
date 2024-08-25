@@ -48,28 +48,7 @@ public class UserController {
 	
 	Logger logger = LoggerFactory.getLogger(UserController.class);
 	
-	@PostMapping("/users")
-	public ResponseEntity<User> createNewUser(@Valid @RequestBody User user){
-		User createNewUser = this.userService.createNewUser(user);
-		logger.info("Created User is {}",createNewUser);
-		return new ResponseEntity<User>(createNewUser,HttpStatus.CREATED);
-		
-	}
-	
-	@DeleteMapping("/users/{userId}")
-	public ResponseEntity<ApiResponse> deleteUser(@PathVariable Long userId){
-		User deleteUser = this.userService.deleteUser(userId);
-		return new ResponseEntity<ApiResponse>(new ApiResponse("User has been deleted successfully,Please Login",true),HttpStatus.ACCEPTED);
-	}
-	
 
-	@PutMapping("/users/{userId}")
-	public ResponseEntity<User> updateUser(@PathVariable("userId")Long userId,@Valid @RequestBody User user){
-		
-		User updatedUser = this.userService.updateUser(user, userId);
-		logger.info("Updated user is {}",updatedUser);
-		return new ResponseEntity<User>(updatedUser,HttpStatus.ACCEPTED);
-	}
 	
 	//Get single user by id
 	@GetMapping("/users/{userId}")
@@ -88,27 +67,15 @@ public class UserController {
 	}
 	
 	
-	@GetMapping("/users/userByName/{userName}")
-	public ResponseEntity<List<User>> getAllUsersByUserName(@PathVariable String userName){
-		
-		
-		List<User> usersByUserName = this.userService.getUsersByUserName(userName);
-		return new ResponseEntity<List<User>>(usersByUserName,HttpStatus.OK);
-	}
-	
-	
-	
 	//Controllers for Microservice communication
-	@GetMapping("/services/users/confirmUserPresence/{userId}")
-	public Boolean confirmUserPresence(@PathVariable("userId")Long userId) {
-		return this.userService.confirmUserService(userId);
-	}
 	
 	@GetMapping("/services/users/getUser/{userId}")
 	public User getUserByUserId(@PathVariable Long userId) {
 		User user = this.userService.getUserService(userId);
 		return user;
 	}
+
+
 	
 	
 	//Controllers to upload and get profile images
@@ -119,10 +86,10 @@ public class UserController {
 		String uploadImage = this.fileService.uploadImage(this.path , image,userId);// here we will handle exception using
 	
 		user.setProfileImage(uploadImage);
+
+//		User updatedUser = this.userService.updateUser(null, userId);
 		
-		User updatedUser = this.userService.updateUser(user, userId);
-		
-		FileResponse<User> response = new FileResponse<>(updatedUser,true);
+		FileResponse<User> response = new FileResponse<>(null,true);
 		return new ResponseEntity<FileResponse<User>>(response,HttpStatus.CREATED);
 	}
 

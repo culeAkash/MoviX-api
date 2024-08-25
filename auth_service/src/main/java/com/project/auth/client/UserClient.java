@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.net.CacheRequest;
 
-@FeignClient(name = "user-service",path = "/api/v1/users")
+@FeignClient(name = "user-service",path = "/api/v1/users/public")
 public interface UserClient {
     @PostMapping("/save")
     ResponseEntity<RegisterDTO> saveUser(@RequestBody RegisterRequest request);
