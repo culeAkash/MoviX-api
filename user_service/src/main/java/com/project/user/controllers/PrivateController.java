@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/users")
 public class PrivateController {
@@ -32,5 +34,11 @@ public class PrivateController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long userId){
         userService.deleteUser(userId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/getAllUsers")
+    public ResponseEntity<List<UserDTO>> getAllUsers(){
+        List<UserDTO> allActiveUsers = this.userService.getAllUsers();
+        return ResponseEntity.ok().body(allActiveUsers);
     }
 }

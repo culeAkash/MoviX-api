@@ -16,12 +16,10 @@ public User createNewUser(RegisterRequest request);
 	
 	public void deleteUser(Long userId);
 	
-	public User getUserById(Long userId);
+	public UserDTO getUserById(Long userId);
 	
-	public List<User> getAllUsers();
+	public List<UserDTO> getAllUsers();
 
-	User getUserService(Long userId);
-
-	User getUserByEmail(String email);
+	public UserDTO getUserByEmail(String email);
 	
 }

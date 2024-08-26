@@ -1,6 +1,8 @@
 package com.project.user.services.impl;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.project.user.enums.Active;
 import com.project.user.enums.Role;
@@ -79,21 +81,25 @@ public class UserServiceImpl implements UserService {
 
 	//Service method for getting user by id
 	@Override
-	public User getUserById(Long userId) {
-		User user = userRepository.findById(userId)
+	public UserDTO getUserById(Long userId) {
+        User userById = userRepository.findById(userId)
 				.orElseThrow(()->new ResourceNotFoundException("User", "userId", userId));
-		return user; 
+		return mapper.map(userById, UserDTO.class);
 	}
 
 	//Service method for getting all users
 	@Override
-	public List<User> getAllUsers() {
-        return userRepository.findAllByActive(Active.ACTIVE);
+	public List<UserDTO> getAllUsers() {
+        List<User> allActiveUsers = userRepository.findAllByActive(Active.ACTIVE);
+		List<UserDTO> allActiveUsersDTO = new ArrayList<>();
+		allActiveUsers.forEach((user)->allActiveUsersDTO.add(mapper.map(user, UserDTO.class)));
+		return allActiveUsersDTO;
 	}
 
 	@Override
-	public User getUserByEmail(String email) {
-		return userRepository.findByEmail(email).orElse(null);
+	public UserDTO getUserByEmail(String email) {
+		User userByEmail =  userRepository.findByEmail(email).orElse(null);
+		return mapper.map(userByEmail,UserDTO.class);
 	}
 
 
@@ -102,15 +108,6 @@ public class UserServiceImpl implements UserService {
 //		System.out.println(forObject);
 		ReviewDto dto = this.mapper.map(forObject, ReviewDto.class);
 		return dto;
-	}
-
-	//Service methods for micro-service cross communication
-
-	@Override
-	public User getUserService(Long userId) {
-		User findById = this.userRepository.findById(userId).orElse(null);
-		System.out.println(findById);
-		return findById;
 	}
 
 

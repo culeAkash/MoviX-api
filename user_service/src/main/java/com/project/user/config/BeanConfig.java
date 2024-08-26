@@ -1,17 +1,21 @@
 package com.project.user.config;
 
+import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.client.RestTemplate;
 
 @Configuration
-public class MyConfig {
+public class BeanConfig {
 	@Bean
 	public ModelMapper getModelMapper() {
-		return new ModelMapper();
+		ModelMapper modelMapper =  new ModelMapper();
+		modelMapper.getConfiguration()
+				.setMatchingStrategy(MatchingStrategies.LOOSE)
+				.setPropertyCondition(Conditions.isNotNull());
+		return modelMapper;
 	}
 
 	@Bean

@@ -45,7 +45,7 @@ public class User {
 	
 	private String about;
 
-	private String profileImage;
+	private String imageUrl;
 	
 	
 }

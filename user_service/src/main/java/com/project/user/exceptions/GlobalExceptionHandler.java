@@ -39,6 +39,14 @@ public class GlobalExceptionHandler {
 		}
 
 
+	@ExceptionHandler(GenericErrorResponse.class)
+	public ResponseEntity<?> genericError(GenericErrorResponse exception) {
+		Map<String, String> errors = new HashMap<>();
+		errors.put("error", exception.getMessage());
+		return new ResponseEntity<>(errors, exception.getHttpStatus());
+	}
+
+
 
 	@ExceptionHandler(ResourceNotFoundException.class)
 	public ResponseEntity<ApiResponse> resourceNotFoundExceptionHandler(ResourceNotFoundException e) {

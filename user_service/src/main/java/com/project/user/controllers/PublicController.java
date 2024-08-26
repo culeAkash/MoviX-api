@@ -30,7 +30,16 @@ public class PublicController {
 
     @GetMapping("/getUserByEmail/{email}")
     public ResponseEntity<UserDTO> getUserByEmail(@PathVariable String email) {
-        User reqUser = this.userService.getUserByEmail(email);
-        return new ResponseEntity<>(modelMapper.map(reqUser, UserDTO.class),HttpStatus.OK);
+        UserDTO userByEmail = this.userService.getUserByEmail(email);
+        return new ResponseEntity<>(userByEmail,HttpStatus.OK);
     }
+
+
+    @GetMapping("/getUserByUserId/{userId}")
+    public ResponseEntity<UserDTO> getUserByUserId(@PathVariable Long userId){
+        UserDTO userById = this.userService.getUserById(userId);
+        return ResponseEntity.ok().body(userById);
+    }
+
+
 }
