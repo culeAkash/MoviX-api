@@ -5,6 +5,8 @@ import com.project.file.exceptions.GenericErrorResponse;
 import com.project.file.repository.FileRepository;
 import com.project.file.services.FileService;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -26,12 +28,15 @@ public class FileServiceImpl implements FileService {
     @Value("${folder.path}")
     private String path;
 
+    private static final Logger logger = LoggerFactory.getLogger(FileServiceImpl.class);
+
 
     @PostConstruct
     public void init(){
         String currentWorkingDirectory = System.getProperty("user.dir");
+        logger.debug(currentWorkingDirectory);
         FOLDER_PATH = currentWorkingDirectory + path;
-
+        logger.debug(FOLDER_PATH);
         java.io.File targetFolder = new java.io.File(FOLDER_PATH);
 
         if(!targetFolder.exists()){

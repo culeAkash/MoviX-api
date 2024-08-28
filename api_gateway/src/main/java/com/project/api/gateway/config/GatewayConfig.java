@@ -16,11 +16,17 @@ public class GatewayConfig {
     @Bean
     public RouteLocator routes(RouteLocatorBuilder builder){
         return builder.routes()
-                .route("public-user-service", r -> r.path("/users/public/**")
+                .route("public-user-service", r -> r.path("/api/v1/users/public/**")
                         .uri("lb://user-service"))
-                .route("private-user-service", r -> r.path("/users/**")
+                .route("private-user-service", r -> r.path("/api/v1/users/**")
                         .filters(f -> f.filter(filter))
                         .uri("lb://user-service"))
+                .route("auth-service",r->r.path("/api/v1/auth/**")
+                        .uri("lb://auth-service"))
+                .route("file-service",r->r.path("/api/v1/file-storage/**")
+                        .filters(f->f.filter(filter))
+                        .uri("lb://file-service")
+                )
                 .build();
     }
 }

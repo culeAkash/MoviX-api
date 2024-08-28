@@ -6,7 +6,9 @@ import com.project.auth.payloads.TokenDTO;
 import com.project.auth.requests.LoginRequest;
 import com.project.auth.requests.RegisterRequest;
 import com.project.auth.services.AuthService;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,10 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/auth")
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
+
+    private AuthService authService;
 
     @PostMapping("/login")
     public ResponseEntity<TokenDTO> login(@RequestBody LoginRequest request) throws WrongCredentialsException {
