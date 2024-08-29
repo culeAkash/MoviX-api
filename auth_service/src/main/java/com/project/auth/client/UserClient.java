@@ -1,6 +1,7 @@
 package com.project.auth.client;
 
 
+import com.project.auth.config.FeignConfig;
 import com.project.auth.payloads.RegisterDTO;
 import com.project.auth.payloads.UserDTO;
 import com.project.auth.requests.RegisterRequest;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.net.CacheRequest;
 
-@FeignClient(name = "user-service",path = "/api/v1/users/public")
+@FeignClient(name = "user-service",path = "/api/v1/users/public",configuration = FeignConfig.class)
 public interface UserClient {
     @PostMapping("/save")
     ResponseEntity<RegisterDTO> saveUser(@RequestBody RegisterRequest request);

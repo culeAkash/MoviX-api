@@ -1,6 +1,7 @@
 package com.project.user.controllers;
 
 import com.project.user.entities.User;
+import com.project.user.payloads.AuthUserDTO;
 import com.project.user.payloads.UserDTO;
 import com.project.user.requests.RegisterRequest;
 import com.project.user.services.UserService;
@@ -29,8 +30,8 @@ public class PublicController {
     }
 
     @GetMapping("/getUserByEmail/{email}")
-    public ResponseEntity<UserDTO> getUserByEmail(@PathVariable String email) {
-        UserDTO userByEmail = this.userService.getUserByEmail(email);
+    public ResponseEntity<AuthUserDTO> getUserByEmail(@PathVariable String email) {
+        AuthUserDTO userByEmail = this.userService.getUserByEmail(email);
         return new ResponseEntity<>(userByEmail,HttpStatus.OK);
     }
 

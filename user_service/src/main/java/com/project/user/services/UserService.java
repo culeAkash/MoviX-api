@@ -3,6 +3,7 @@ package com.project.user.services;
 import java.util.List;
 
 import com.project.user.entities.User;
+import com.project.user.payloads.AuthUserDTO;
 import com.project.user.payloads.UserDTO;
 import com.project.user.requests.RegisterRequest;
 
@@ -20,6 +21,6 @@ public User createNewUser(RegisterRequest request);
 	
 	public List<UserDTO> getAllUsers();
 
-	public UserDTO getUserByEmail(String email);
+	public AuthUserDTO getUserByEmail(String email);
 	
 }

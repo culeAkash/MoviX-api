@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import com.project.user.enums.Active;
 import com.project.user.enums.Role;
+import com.project.user.payloads.AuthUserDTO;
 import com.project.user.payloads.UserDTO;
 import com.project.user.requests.RegisterRequest;
 import org.modelmapper.ModelMapper;
@@ -28,9 +29,6 @@ public class UserServiceImpl implements UserService {
 	
 	@Autowired
 	private UserRepository userRepository;
-	
-	@Autowired
-	private RestTemplate restTemplate;
 	
 	@Autowired
 	private ModelMapper mapper;
@@ -97,9 +95,9 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public UserDTO getUserByEmail(String email) {
+	public AuthUserDTO getUserByEmail(String email) {
 		User userByEmail =  userRepository.findByEmail(email).orElse(null);
-		return mapper.map(userByEmail,UserDTO.class);
+		return mapper.map(userByEmail, AuthUserDTO.class);
 	}
 
 

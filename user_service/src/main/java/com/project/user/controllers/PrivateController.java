@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,8 +25,16 @@ public class PrivateController {
     @Autowired
     private ModelMapper modelMapper;
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/getAllUsers")
+    public ResponseEntity<List<UserDTO>> getAllUsers(){
+        List<UserDTO> allActiveUsers = this.userService.getAllUsers();
+        return ResponseEntity.ok().body(allActiveUsers);
+    }
+
+
     @PutMapping("/updateUser/{userId}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable Long userId, @Valid UserDTO userDTO){
+    public ResponseEntity<UserDTO> updateUserById(@PathVariable Long userId, @Valid UserDTO userDTO){
         UserDTO updatedUser = userService.updateUser(userDTO,userId);
         return new ResponseEntity<>(updatedUser, HttpStatus.ACCEPTED);
     }
@@ -34,11 +43,5 @@ public class PrivateController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long userId){
         userService.deleteUser(userId);
         return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/getAllUsers")
-    public ResponseEntity<List<UserDTO>> getAllUsers(){
-        List<UserDTO> allActiveUsers = this.userService.getAllUsers();
-        return ResponseEntity.ok().body(allActiveUsers);
     }
 }
