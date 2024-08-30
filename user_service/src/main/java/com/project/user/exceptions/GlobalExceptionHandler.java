@@ -53,7 +53,7 @@ public class GlobalExceptionHandler {
 		logger.warn("The resource requested doesn't exist");
 		final String message = e.getMessage();
 		final ApiResponse apiResponse = new ApiResponse(message, false);
-		return new ResponseEntity<ApiResponse>(apiResponse, HttpStatus.NOT_FOUND);
+		return new ResponseEntity<>(apiResponse, HttpStatus.NOT_FOUND);
 	}
 	
 	@ExceptionHandler(MethodArgumentNotValidException.class)
@@ -68,6 +68,11 @@ public class GlobalExceptionHandler {
 		 });
 		 
 		 return new ResponseEntity<>(errors,HttpStatus.BAD_REQUEST);
+	}
+
+	@ExceptionHandler(DuplicateColumnException.class)
+	public ResponseEntity<ApiResponse> handleDuplicateCloumnException(DuplicateColumnException ex){
+			return new ResponseEntity<>(new ApiResponse(ex.getMessage(),false),HttpStatus.NOT_ACCEPTABLE);
 	}
 	
 	

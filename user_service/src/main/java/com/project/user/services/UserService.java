@@ -3,6 +3,7 @@ package com.project.user.services;
 import java.util.List;
 
 import com.project.user.entities.User;
+import com.project.user.exceptions.DuplicateColumnException;
 import com.project.user.payloads.AuthUserDTO;
 import com.project.user.payloads.UserDTO;
 import com.project.user.requests.RegisterRequest;
@@ -11,7 +12,7 @@ public interface UserService {
 
 	
 	
-public User createNewUser(RegisterRequest request);
+public User createNewUser(RegisterRequest request) throws DuplicateColumnException;
 	
 	public UserDTO updateUser(UserDTO userDTO, Long userId);
 	

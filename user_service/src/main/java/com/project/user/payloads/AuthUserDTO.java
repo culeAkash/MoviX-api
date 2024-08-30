@@ -1,10 +1,12 @@
 package com.project.user.payloads;
 
 import com.project.user.enums.Role;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class AuthUserDTO {
     private String userId;

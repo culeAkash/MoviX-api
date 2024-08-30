@@ -1,6 +1,7 @@
 package com.project.user.controllers;
 
 import com.project.user.entities.User;
+import com.project.user.exceptions.DuplicateColumnException;
 import com.project.user.payloads.AuthUserDTO;
 import com.project.user.payloads.UserDTO;
 import com.project.user.requests.RegisterRequest;
@@ -23,7 +24,7 @@ public class PublicController {
     ModelMapper modelMapper;
 
     @PostMapping("/save")
-    public ResponseEntity<UserDTO> createNewUser(@Valid @RequestBody RegisterRequest request){
+    public ResponseEntity<UserDTO> createNewUser(@Valid @RequestBody RegisterRequest request) throws DuplicateColumnException {
         User createNewUser = this.userService.createNewUser(request);
         UserDTO userDTO = modelMapper.map(createNewUser, UserDTO.class);
         return new ResponseEntity<UserDTO>(userDTO, HttpStatus.CREATED);

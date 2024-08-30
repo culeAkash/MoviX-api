@@ -2,10 +2,12 @@ package com.project.user.services.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.project.user.enums.Active;
 import com.project.user.enums.Role;
+import com.project.user.exceptions.DuplicateColumnException;
 import com.project.user.payloads.AuthUserDTO;
 import com.project.user.payloads.UserDTO;
 import com.project.user.requests.RegisterRequest;
@@ -41,7 +43,13 @@ public class UserServiceImpl implements UserService {
 	
 	//Service method for creating new user
 	@Override
-	public User createNewUser(RegisterRequest request)  {
+	public User createNewUser(RegisterRequest request) throws DuplicateColumnException {
+		Optional<User> userByEmail = this.userRepository.findByEmail(request.getEmail());
+
+		if(userByEmail.isPresent()){
+			throw new DuplicateColumnException("Email already taken,try with another email");
+		}
+
 		User toSave = User.builder()
 				.name(request.getName())
 				.password(passwordEncoder.encode(request.getPassword()))
@@ -96,7 +104,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public AuthUserDTO getUserByEmail(String email) {
-		User userByEmail =  userRepository.findByEmail(email).orElse(null);
+		User userByEmail =  userRepository.findByEmail(email).orElseThrow(()->new ResourceNotFoundException("User","email",email));
 		return mapper.map(userByEmail, AuthUserDTO.class);
 	}
 

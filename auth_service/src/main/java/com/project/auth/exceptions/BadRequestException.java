@@ -8,4 +8,8 @@ public class BadRequestException extends RuntimeException {
     public BadRequestException(Map<String,String> errors){
         this.errors = errors;
     }
+
+    public BadRequestException(String message){
+        super(message);
+    }
 }

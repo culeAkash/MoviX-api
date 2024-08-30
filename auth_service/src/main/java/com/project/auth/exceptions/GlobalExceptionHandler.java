@@ -14,15 +14,18 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(WrongCredentialsException.class)
-    public ResponseEntity<?> usernameOrPasswordInvalidException(WrongCredentialsException exception) {
-        Map<String, String> errors = new HashMap<>();
-        errors.put("error", exception.getMessage());
-        return new ResponseEntity<>(errors, HttpStatus.UNAUTHORIZED);
+    public ResponseEntity<ApiResponse> usernameOrPasswordInvalidException(WrongCredentialsException exception) {
+        return new ResponseEntity<>(new ApiResponse(exception.getMessage(),false), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(GenericErrorResponse.class)
+    public ResponseEntity<ApiResponse> genericErrorResponse(GenericErrorResponse ex){
+        return new ResponseEntity<>(new ApiResponse(ex.getMessage(),false),ex.getHttpStatus());
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)
-    public final GenericErrorResponse usernameNotFoundExceptionHandler(UsernameNotFoundException exception){
-        return new GenericErrorResponse(exception.getMessage(),HttpStatus.NOT_FOUND);
+    public final ResponseEntity<ApiResponse> usernameNotFoundExceptionHandler(UsernameNotFoundException exception){
+        return new ResponseEntity<>(new ApiResponse(exception.getMessage(),false),HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(BadRequestException.class)
@@ -36,7 +39,6 @@ public class GlobalExceptionHandler {
     public final ResponseEntity<?> handleAllException(Exception ex) {
         System.out.println(ex.getMessage());
         Map<String, String> errors = new HashMap<>();
-        errors.put("error", ex.getMessage());
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
