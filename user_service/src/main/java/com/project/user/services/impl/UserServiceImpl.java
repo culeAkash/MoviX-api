@@ -2,8 +2,6 @@ package com.project.user.services.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.project.user.enums.Active;
 import com.project.user.enums.Role;
@@ -11,12 +9,12 @@ import com.project.user.exceptions.DuplicateColumnException;
 import com.project.user.payloads.AuthUserDTO;
 import com.project.user.payloads.UserDTO;
 import com.project.user.requests.RegisterRequest;
+import com.project.user.services.BloomFilterService;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 
 import com.project.user.entities.User;
@@ -39,15 +37,19 @@ public class UserServiceImpl implements UserService {
 	private BCryptPasswordEncoder passwordEncoder;
 
 	private final Logger logger = org.slf4j.LoggerFactory.getLogger(UserServiceImpl.class);
+
+
+	@Autowired
+	private BloomFilterService bloomFilterService;
 	
 	
 	//Service method for creating new user
 	@Override
 	public User createNewUser(RegisterRequest request) throws DuplicateColumnException {
-		Optional<User> userByEmail = this.userRepository.findByEmail(request.getEmail());
+//		Optional<User> userByEmail = this.userRepository.findByEmail(request.getEmail());
 
-		if(userByEmail.isPresent()){
-			throw new DuplicateColumnException("Email already taken,try with another email");
+		if(bloomFilterService.getEmailBloomFilter().contains(request.getEmail())){
+			throw new DuplicateColumnException("Email is already taken, try some other email");
 		}
 
 		User toSave = User.builder()
