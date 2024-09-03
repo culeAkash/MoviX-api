@@ -7,7 +7,6 @@ import feign.Response;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,15 +32,23 @@ public class PrivateController {
     }
 
 
+    @PreAuthorize("hasRole('USER')")
     @PutMapping("/updateUser/{userId}")
-    public ResponseEntity<UserDTO> updateUserById(@PathVariable Long userId, @Valid UserDTO userDTO){
+    public ResponseEntity<UserDTO> updateUserById(@PathVariable Long userId, @Valid @RequestBody UserDTO userDTO){
         UserDTO updatedUser = userService.updateUser(userDTO,userId);
         return new ResponseEntity<>(updatedUser, HttpStatus.ACCEPTED);
     }
 
+
+    @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/deleteUser/{userId}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long userId){
         userService.deleteUser(userId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
+
+
+    @PreAuthorize("hasRole('USER')")
+    @PostMapping("/uploadImage/{userId}")
+    public ResponseEntity<>
 }

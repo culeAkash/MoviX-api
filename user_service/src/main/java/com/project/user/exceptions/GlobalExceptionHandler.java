@@ -98,8 +98,9 @@ public class GlobalExceptionHandler {
 	
 	@ExceptionHandler({ Exception.class })
 	public ResponseEntity<ApiResponse> handleAll(Exception ex, WebRequest request) {
-	    ApiResponse apiResponse = new ApiResponse(ex.getMessage(), false);
-	    return new ResponseEntity<ApiResponse>(apiResponse,HttpStatus.INTERNAL_SERVER_ERROR);
+		System.out.println(ex.getMessage());
+	    	ApiResponse apiResponse = new ApiResponse(ex.getMessage(), false);
+	    	return new ResponseEntity<ApiResponse>(apiResponse,HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 	
 

@@ -2,10 +2,13 @@ package com.project.user.services.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import com.project.user.enums.Active;
 import com.project.user.enums.Role;
 import com.project.user.exceptions.DuplicateColumnException;
+import com.project.user.exceptions.GenericErrorResponse;
 import com.project.user.payloads.AuthUserDTO;
 import com.project.user.payloads.UserDTO;
 import com.project.user.requests.RegisterRequest;
@@ -13,6 +16,9 @@ import com.project.user.services.BloomFilterService;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -66,11 +72,29 @@ public class UserServiceImpl implements UserService {
 	//Service method fro updating already existing user. It will give exception when user is not present or updating user is not logged in
 	@Override
 	public UserDTO updateUser(UserDTO userDTO, Long userId){
+
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+		Object principal = authentication.getPrincipal();
+
+		logger.debug("Pricipal: " + principal);
+
+		User userByPrincipal = this.userRepository.findByEmail(String.valueOf(principal)).get();
+
+		if(!Objects.equals(userByPrincipal.getUserId(), userId)){
+			throw new GenericErrorResponse("Not allowed to perform this action", HttpStatus.FORBIDDEN);
+		}
+
 		User toUpdate = this.userRepository.findById(userId)
 				.orElseThrow(()->new ResourceNotFoundException("User", "userId", userId));
 
+		System.out.println(userDTO);
+
 		toUpdate.setName(userDTO.getName());
+
 		toUpdate.setAbout(userDTO.getAbout());
+
+		toUpdate.setEmail(userDTO.getEmail());
 
 		User updatedUser = this.userRepository.save(toUpdate);
 
@@ -81,8 +105,18 @@ public class UserServiceImpl implements UserService {
 	//It will give exception when user is not present or updating user is not logged in
 	@Override
 	public void deleteUser(Long userId) {
+
 		User user = userRepository.findById(userId)
 				.orElseThrow(()->new ResourceNotFoundException("User", "userId", userId));
+
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+		String principal = authentication.getPrincipal().toString();
+
+		User userByPrincipal = this.userRepository.findByEmail(principal).get();
+
+		if(!Objects.equals(userByPrincipal.getUserId(), userId))
+			throw new GenericErrorResponse("Not allowed to perform this action", HttpStatus.FORBIDDEN);
 
 		userRepository.delete(user);
 	}
