@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.project.user.client.FileServiceClient;
 import com.project.user.enums.Active;
 import com.project.user.enums.Role;
 import com.project.user.exceptions.DuplicateColumnException;
@@ -13,6 +14,8 @@ import com.project.user.payloads.AuthUserDTO;
 import com.project.user.payloads.UserDTO;
 import com.project.user.requests.RegisterRequest;
 import com.project.user.services.BloomFilterService;
+import jakarta.annotation.PostConstruct;
+import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,25 +31,39 @@ import com.project.user.exceptions.ResourceNotFoundException;
 import com.project.user.payloads.ReviewDto;
 import com.project.user.repositories.UserRepository;
 import com.project.user.services.UserService;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class UserServiceImpl implements UserService {
 
-	
 	@Autowired
 	private UserRepository userRepository;
-	
 	@Autowired
 	private ModelMapper mapper;
-
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
+	@Autowired
+	private FileServiceClient fileServiceClient;
 
 	private final Logger logger = org.slf4j.LoggerFactory.getLogger(UserServiceImpl.class);
 
 
 	@Autowired
 	private BloomFilterService bloomFilterService;
+
+
+
+
+
+	private User init(){
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+		Object principal = authentication.getPrincipal();
+
+		logger.debug("Pricipal: " + principal);
+
+        return this.userRepository.findByEmail(String.valueOf(principal)).orElse(null);
+	}
 	
 	
 	//Service method for creating new user
@@ -73,15 +90,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserDTO updateUser(UserDTO userDTO, Long userId){
 
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-		Object principal = authentication.getPrincipal();
-
-		logger.debug("Pricipal: " + principal);
-
-		User userByPrincipal = this.userRepository.findByEmail(String.valueOf(principal)).get();
-
-		if(!Objects.equals(userByPrincipal.getUserId(), userId)){
+		if(!Objects.equals(init().getUserId(), userId)){
 			throw new GenericErrorResponse("Not allowed to perform this action", HttpStatus.FORBIDDEN);
 		}
 
@@ -109,13 +118,7 @@ public class UserServiceImpl implements UserService {
 		User user = userRepository.findById(userId)
 				.orElseThrow(()->new ResourceNotFoundException("User", "userId", userId));
 
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-		String principal = authentication.getPrincipal().toString();
-
-		User userByPrincipal = this.userRepository.findByEmail(principal).get();
-
-		if(!Objects.equals(userByPrincipal.getUserId(), userId))
+		if(!Objects.equals(init().getUserId(), userId))
 			throw new GenericErrorResponse("Not allowed to perform this action", HttpStatus.FORBIDDEN);
 
 		userRepository.delete(user);
@@ -144,6 +147,31 @@ public class UserServiceImpl implements UserService {
 		return mapper.map(userByEmail, AuthUserDTO.class);
 	}
 
+	@Override
+	public UserDTO uploadImageForUser(MultipartFile image, Long userId) {
+
+		if(!Objects.equals(init().getUserId(),userId)){
+			throw new GenericErrorResponse("Not allowed to perform this action", HttpStatus.FORBIDDEN);
+		}
+
+		User userById = userRepository.findById(userId)
+				.orElseThrow(()->new ResourceNotFoundException("User", "userId", userId));
+
+		if(image!=null){
+//			System.out.println(image.getContentType());
+			String profilePicture = this.fileServiceClient.uploadImageToFileSystem(image).getBody();
+			if(profilePicture!=null) {
+				if (userById.getImageUrl() != null) {
+					this.fileServiceClient.deleteImageFromFileSystem(userById.getImageUrl());
+				}
+				userById.setImageUrl(profilePicture);
+			}
+		}
+
+		User updatedUser = this.userRepository.save(userById);
+		return mapper.map(updatedUser,UserDTO.class);
+
+	}
 
 
 	public ReviewDto getDto(Object forObject) {

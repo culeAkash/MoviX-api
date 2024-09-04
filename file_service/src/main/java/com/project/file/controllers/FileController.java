@@ -17,22 +17,23 @@ public class FileController {
     @Autowired
     private FileService fileService;
 
-    @PostMapping("/upload")
-    public ResponseEntity<String> uploadImageToFileSystem(@RequestParam(name = "image")MultipartFile file){
-        return ResponseEntity.ok().body(this.fileService.uploadImageToFileSystem(file));
+    @PostMapping(value = "/upload",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> uploadImageToFileSystem(@RequestParam("image") MultipartFile image){
+        System.out.println(image.getName());
+        return ResponseEntity.ok().body(this.fileService.uploadImageToFileSystem(image));
     }
 
     @GetMapping("/download/{fileId}")
     public ResponseEntity<?> downloadFileFromFileSystem(@PathVariable("fileId") String fileId) throws IOException {
         byte[] fileData = this.fileService.downloadImageFromFileSystem(fileId);
 
-        // Use the fileId to determine the file type (e.g., file extension)
-        String mimeType = Files.probeContentType(Paths.get(fileId));
-        if (mimeType == null) {
-            mimeType = "application/octet-stream"; // Default MIME type if unknown
-        }
+//        // Use the fileId to determine the file type (e.g., file extension)
+//        String mimeType = Files.probeContentType(Paths.get(fileId));
+//        if (mimeType == null) {
+//            mimeType = "application/octet-stream"; // Default MIME type if unknown
+//        }
 
-        return ResponseEntity.accepted().contentType(MediaType.valueOf(mimeType)).build();
+        return ResponseEntity.accepted().contentType(MediaType.valueOf("image/png")).body(fileData);
     }
 
 

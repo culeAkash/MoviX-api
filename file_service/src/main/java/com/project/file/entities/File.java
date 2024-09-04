@@ -2,12 +2,14 @@ package com.project.file.entities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 @Entity(name = "files")
 @Builder
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class File {
     @Id
     private String fileId;

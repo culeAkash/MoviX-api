@@ -7,6 +7,7 @@ import com.project.user.exceptions.DuplicateColumnException;
 import com.project.user.payloads.AuthUserDTO;
 import com.project.user.payloads.UserDTO;
 import com.project.user.requests.RegisterRequest;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
 
@@ -23,5 +24,8 @@ public User createNewUser(RegisterRequest request) throws DuplicateColumnExcepti
 	public List<UserDTO> getAllUsers();
 
 	public AuthUserDTO getUserByEmail(String email);
+
+
+	public UserDTO uploadImageForUser(MultipartFile image,Long userId);
 	
 }
