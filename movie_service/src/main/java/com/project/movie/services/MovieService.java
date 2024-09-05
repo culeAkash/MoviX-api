@@ -3,11 +3,12 @@ package com.project.movie.services;
 import java.util.List;
 
 import com.project.movie.entities.Movie;
+import com.project.movie.payloads.MovieDTO;
 
 public interface MovieService {
 
 
-	public Movie createNewMovie(Movie movie);
+	public MovieDTO createNewMovie(MovieDTO movie);
 
 	public Movie deleteMovie(Long movieId);
 

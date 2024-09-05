@@ -173,6 +173,23 @@ public class UserServiceImpl implements UserService {
 
 	}
 
+	@Override
+	public UserDTO deleteImageForUser(Long userId) {
+		if(!Objects.equals(init().getUserId(),userId)){
+			throw new GenericErrorResponse("Not allowed to perform this action", HttpStatus.FORBIDDEN);
+		}
+
+		User userById = userRepository.findById(userId)
+				.orElseThrow(()->new ResourceNotFoundException("User", "userId", userId));
+		if(userById.getImageUrl()!=null) {
+			this.fileServiceClient.deleteImageFromFileSystem(userById.getImageUrl());
+			userById.setImageUrl(null);
+		}
+
+		return mapper.map(this.userRepository.save(userById),UserDTO.class);
+
+	}
+
 
 	public ReviewDto getDto(Object forObject) {
 //		System.out.println(forObject);

@@ -1,33 +1,26 @@
 package com.project.movie.controllers;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
+import com.project.movie.payloads.MovieDTO;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StreamUtils;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.project.movie.entities.Movie;
-import com.project.movie.payloads.FileResponse;
-import com.project.movie.services.FileService;
 import com.project.movie.services.MovieService;
 
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 
@@ -38,21 +31,14 @@ public class MovieController {
 	@Autowired
 	private MovieService movieService;
 	
-	@Autowired
-	private FileService fileService;
-	
-	@Value("${project.image.movies}")
-	private String path;
-	
 	
 	Logger logger = org.slf4j.LoggerFactory.getLogger(MovieController.class);
 
 	@PostMapping("/movies")
-	public ResponseEntity<Movie> createNewMovie(@Valid @RequestBody Movie movie){
-		logger.debug("The sent movie data by client is {}",movie);
-		Movie newMovie = movieService.createNewMovie(movie);
-		logger.debug("The created movie is {}",newMovie);
-		return new ResponseEntity<>(newMovie,HttpStatus.ACCEPTED);
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<MovieDTO> createNewMovie(@Valid @RequestBody MovieDTO movie){
+		MovieDTO createdMovie = this.movieService.createNewMovie(movie);
+		return new ResponseEntity<>(createdMovie,HttpStatus.CREATED);
 	}
 
 	@DeleteMapping("/movies/{movieId}")
@@ -92,35 +78,6 @@ public class MovieController {
 
 	}
 
-	
-	
-	@PostMapping("/movies/image/upload/{movieId}")
-	public ResponseEntity<FileResponse<Movie>> postImage(@RequestParam("image") MultipartFile image,@PathVariable Long movieId) throws IOException{
-		Movie movie = this.movieService.getMovieById(movieId);
-		
-		String uploadImage = this.fileService.uploadImage(this.path, image);// here we will handle exception using
-	
-		movie.setImageUrl(uploadImage);
-		
-		Movie updatedMovie = this.movieService.updateMovie(movieId, movie);
-		
-		FileResponse<Movie> response = new FileResponse<>(updatedMovie,true);
-		return new ResponseEntity<FileResponse<Movie>>(response,HttpStatus.CREATED);
-	}
-
-
-	@GetMapping(value = "/movies/image/{movieId}", produces = MediaType.IMAGE_JPEG_VALUE) // on firing this url in the
-	// browser image will get
-	// displayed
-public void DownloadImage(@PathVariable Long movieId, HttpServletResponse response) throws IOException {
-		Movie movieById = this.movieService.getMovieById(movieId);
-		String imageUrl = movieById.getImageUrl();
-		InputStream resource = this.fileService.getResource(this.path, imageUrl);
-		response.setContentType(MediaType.IMAGE_JPEG_VALUE);
-		StreamUtils.copy(resource, response.getOutputStream());
-}
-	
-	
 	//controllers for microservice communication
 	@GetMapping("/services/movies/isPresent/{movieId}")
 	public Boolean checkIfMoviePresent(@PathVariable Long movieId) {

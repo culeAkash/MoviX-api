@@ -56,4 +56,12 @@ public class PrivateController {
             UserDTO userDTO = this.userService.uploadImageForUser(image,userId);
             return new ResponseEntity<>(userDTO,HttpStatus.CREATED);
     }
+
+
+    @PreAuthorize("hasRole('USER')")
+    @DeleteMapping(value = "deleteImage/{userId}")
+    public ResponseEntity<UserDTO> deleteImageForUser(@PathVariable("userId") Long userId){
+        UserDTO userDTO = this.userService.deleteImageForUser(userId);
+        return ResponseEntity.accepted().body(userDTO);
+    }
 }

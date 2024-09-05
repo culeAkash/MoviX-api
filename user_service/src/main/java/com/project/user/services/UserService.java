@@ -27,5 +27,7 @@ public User createNewUser(RegisterRequest request) throws DuplicateColumnExcepti
 
 
 	public UserDTO uploadImageForUser(MultipartFile image,Long userId);
+
+	public UserDTO deleteImageForUser(Long userId);
 	
 }

@@ -13,6 +13,6 @@ public interface FileServiceClient {
     ResponseEntity<String> uploadImageToFileSystem(@RequestPart("image") MultipartFile image);
 
     @DeleteMapping("/delete/{fileId}")
-    ResponseEntity<Void> deleteImageFromFileSystem(@PathVariable String fileId);
+    void deleteImageFromFileSystem(@PathVariable String fileId);
 
 }
