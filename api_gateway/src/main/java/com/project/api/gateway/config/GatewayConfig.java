@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class GatewayConfig {
     @Autowired
-    private JwtAuthenticationFilter filter;
+    private JwtAuthenticationFilter authenticationFilter;
 
     @Bean
     public RouteLocator routes(RouteLocatorBuilder builder){
@@ -19,13 +19,17 @@ public class GatewayConfig {
                 .route("public-user-service", r -> r.path("/api/v1/users/public/**")
                         .uri("lb://user-service"))
                 .route("private-user-service", r -> r.path("/api/v1/users/**")
-                        .filters(f -> f.filter(filter))
+                        .filters(f -> f.filter(authenticationFilter))
                         .uri("lb://user-service"))
                 .route("auth-service",r->r.path("/api/v1/auth/**")
                         .uri("lb://auth-service"))
                 .route("file-service",r->r.path("/api/v1/file-storage/**")
-                        .uri("lb://file-service")
-                )
+                        .uri("lb://file-service"))
+                .route("movie-service",r->r.path("/api/v1/movies/getMovies/**")
+                        .uri("lb://movie-service"))
+                .route("movie-private-service",r->r.path("/api/v1/movies/**")
+                        .filters(f->f.filter(authenticationFilter))
+                        .uri("lb://movie-service"))
                 .build();
     }
 }

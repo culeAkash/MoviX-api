@@ -10,15 +10,13 @@ public interface MovieService {
 
 	public MovieDTO createNewMovie(MovieDTO movie);
 
-	public Movie deleteMovie(Long movieId);
+	public List<MovieDTO> getAllMovies();
 
-	public List<Movie> getAllMovies();
+	public MovieDTO getMovieById(Long movieId);
 
-	public Movie getMovieById(Long movieId);
+	List<MovieDTO> getMovieByMovieNameOrDirector(String directorOrMovieName);
 
-	public Movie updateMovie(Long movieId,Movie movie);
+	public void deleteMovie(Long movieId);
 
-	public Boolean getMovieByIdService(Long movieId);
-
-	List<Movie> getMovieByMovieNameOrDirector(String movieName);
+	public MovieDTO updateMovie(Long movieId,MovieDTO movie);
 }
