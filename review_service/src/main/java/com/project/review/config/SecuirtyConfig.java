@@ -1,40 +1,38 @@
-package com.project.user.config;
+package com.project.review.config;
 
-import com.project.user.jwt.JwtAuthenticationFilter;
+
+import com.project.review.jwt.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
-import org.springframework.security.config.annotation.authentication.configuration.EnableGlobalAuthentication;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
-public class SecurityConfig {
+public class SecuirtyConfig {
 
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws  Exception{
-        return http.csrf().disable()
-                .authorizeHttpRequests()
-                .anyRequest().permitAll()
-                .and()
-                .formLogin().disable()
-                .httpBasic().disable()
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
+         http.csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .addFilterBefore(jwtAuthenticationFilter, JwtAuthenticationFilter.class);
+        return http.build();
     }
-
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
@@ -56,5 +54,4 @@ public class SecurityConfig {
             }
         };
     }
-
 }
