@@ -30,7 +30,7 @@ public class SecuirtyConfig {
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
-                .addFilterBefore(jwtAuthenticationFilter, JwtAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

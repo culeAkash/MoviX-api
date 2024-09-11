@@ -3,10 +3,7 @@ package com.project.review.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
@@ -21,6 +18,7 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class Rating {
 
     @Id

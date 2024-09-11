@@ -30,6 +30,11 @@ public class GatewayConfig {
                 .route("movie-private-service",r->r.path("/api/v1/movies/**")
                         .filters(f->f.filter(authenticationFilter))
                         .uri("lb://movie-service"))
+                .route("review-service",r->r.path("/api/v1/ratings/**")
+                        .filters(f->f.filter(authenticationFilter))
+                        .uri("lb://review-service")
+                )
+
                 .build();
     }
 }

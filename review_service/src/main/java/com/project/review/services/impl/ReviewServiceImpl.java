@@ -3,9 +3,11 @@ package com.project.review.services.impl;
 
 import com.project.review.payloads.ReviewDTO;
 import com.project.review.services.ReviewService;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class ReviewServiceImpl implements ReviewService {
     @Override
     public ReviewDTO createNewReview(ReviewDTO reviewDTO, Long userId, Long movieId) {

@@ -29,4 +29,8 @@ public class ReviewDTO {
 
     @NotNull(message = "User ID cannot be null")
     private Long userId;
+
+
+    private String userName;
+    private String imageUrl;
 }
