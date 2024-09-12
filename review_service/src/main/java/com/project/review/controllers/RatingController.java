@@ -1,6 +1,7 @@
 package com.project.review.controllers;
 
 import com.project.review.payloads.RatingDTO;
+import com.project.review.payloads.RatingResponseDTO;
 import com.project.review.services.RatingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,20 +25,26 @@ public class RatingController {
         return new ResponseEntity<>(newRatingDTO, HttpStatus.CREATED);
     }
 
-    @GetMapping("/getRating/user/{userId}/movie/{movieId}")
-    public ResponseEntity<RatingDTO> getRatingByUserIdAndMovieId(@PathVariable("userId") Long userId,@PathVariable("movieId") Long movieId){
-        return null;
+    @GetMapping("/getAllRatings/movie/{movieId}")
+    public ResponseEntity<RatingResponseDTO> getAllRatingsOfMovie(@PathVariable("movieId") Long movieId){
+        RatingResponseDTO averageRatingOfMovie =  this.ratingService.getAllRatingsOfMovie(movieId);
+        return ResponseEntity.ok().body(averageRatingOfMovie);
     }
 
-    @GetMapping("/getAllRatings/movie/{movieId}")
-    public ResponseEntity<List<RatingDTO>> getAllRatingsOfMovie(@PathVariable("movieId") Long movieId){
-        return null;
+    @GetMapping("/getRating/user/{userId}/movie/{movieId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<RatingResponseDTO> getRatingByUserIdAndMovieId(@PathVariable("userId") Long userId,@PathVariable("movieId") Long movieId){
+        RatingResponseDTO ratingResponseDTO = this.ratingService.getRatingOfMovieByUser(userId,movieId);
+        return ResponseEntity.ok().body(ratingResponseDTO);
     }
+
+
 
     @DeleteMapping("/deleteRating/user/{userId}/movie/{movieId}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Void> deleteRatingByUserAndMovie(@PathVariable("userId") Long userId,@PathVariable("movieId") Long movieId){
-        return null;
+        this.ratingService.deleteRatingByUserAndMovie(userId,movieId);
+        return ResponseEntity.noContent().build();
     }
 
 }

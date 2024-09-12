@@ -3,21 +3,21 @@ package com.project.review.services.impl;
 import com.project.review.client.MovieServiceClient;
 import com.project.review.client.UserServiceClient;
 import com.project.review.entities.Rating;
-import com.project.review.exceptions.GenericException;
 import com.project.review.payloads.MovieDTO;
 import com.project.review.payloads.RatingDTO;
+import com.project.review.payloads.RatingResponseDTO;
 import com.project.review.payloads.UserDTO;
 import com.project.review.repositories.RatingRepository;
 import com.project.review.services.RatingService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
+
+
+import static com.project.review.utils.AccessUtils.validateMovieExistence;
+import static com.project.review.utils.AccessUtils.validateUserAccess;
 
 @Service
 public class RatingServiceImpl implements RatingService {
@@ -40,25 +40,8 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public RatingDTO createRating(RatingDTO ratingDTO, Long userId, Long movieId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        Object email = authentication.getPrincipal();
-
-        UserDTO userDTO = userServiceClient.getUserByUserEmail(String.valueOf(email)).getBody();
-
-        if (userDTO == null) {
-            throw new GenericException("User not found", HttpStatus.NOT_FOUND);
-        }
-
-        if(!Objects.equals(userDTO.getUserId(), userId)){
-            throw new GenericException("Request not permitted", HttpStatus.FORBIDDEN);
-        }
-
-        MovieDTO movieDTO = this.movieServiceClient.getMovieById(movieId).getBody();
-
-        if (movieDTO == null) {
-            throw new GenericException("Movie not found", HttpStatus.NOT_FOUND);
-        }
+        UserDTO userDTO = validateUserAccess(userId);
+        MovieDTO movieDTO = validateMovieExistence(movieId);
 
         Rating newRating = Rating
                 .builder()
@@ -72,18 +55,51 @@ public class RatingServiceImpl implements RatingService {
         return modelMapper.map(rating, RatingDTO.class);
     }
 
+
     @Override
-    public RatingDTO getRatingOfMovieByUser(Long userId, Long movieId) {
-        return null;
+    public RatingResponseDTO getAllRatingsOfMovie(Long movieId) {
+        List<Rating> ratingsByMovie = this.ratingRepository.findByMovieId(movieId);
+
+        //average all the ratings to find the average rating of the movie
+        Double averageRating = ratingsByMovie.stream()
+                .mapToDouble(Rating::getRatingValue)
+                .average()
+                .orElse(0.0);
+
+        return RatingResponseDTO.builder()
+                .ratingValue(averageRating)
+                .userRatedCount(ratingsByMovie.size())
+                .build();
     }
 
     @Override
-    public List<RatingDTO> getAllRatingsOfMovie(Long movieId) {
-        return List.of();
+    public RatingResponseDTO getRatingOfMovieByUser(Long userId, Long movieId) {
+        validateUserAccess(userId);
+        validateMovieExistence(movieId);
+
+        Rating ratingByUserAndMovie = this.ratingRepository.findByMovieIdAndUserId(movieId,userId);
+
+
+        return RatingResponseDTO.builder()
+                .ratingValue(Double.valueOf(ratingByUserAndMovie.getRatingValue()))
+                .userRatedCount(1)
+                .build();
     }
+
+
 
     @Override
     public void deleteRatingByUserAndMovie(Long userId, Long movieId) {
+        validateUserAccess(userId);
+        validateMovieExistence(movieId);
 
+        Rating ratingByUserAndMovie = this.ratingRepository.findByMovieIdAndUserId(movieId,userId);
+
+        if(ratingByUserAndMovie!=null){
+            this.ratingRepository.delete(ratingByUserAndMovie);
+        }
     }
+
+
+
 }
