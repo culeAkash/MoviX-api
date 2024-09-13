@@ -1,16 +1,18 @@
 package com.project.review.services.impl;
 
-import com.project.review.client.MovieServiceClient;
-import com.project.review.client.UserServiceClient;
 import com.project.review.entities.Rating;
+import com.project.review.exceptions.GenericException;
 import com.project.review.payloads.MovieDTO;
 import com.project.review.payloads.RatingDTO;
 import com.project.review.payloads.RatingResponseDTO;
 import com.project.review.payloads.UserDTO;
 import com.project.review.repositories.RatingRepository;
 import com.project.review.services.RatingService;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,21 +22,11 @@ import static com.project.review.utils.AccessUtils.validateMovieExistence;
 import static com.project.review.utils.AccessUtils.validateUserAccess;
 
 @Service
+@AllArgsConstructor
+@NoArgsConstructor
 public class RatingServiceImpl implements RatingService {
 
-
-    @Autowired
-    private UserServiceClient userServiceClient;
-
-
-    @Autowired
-    private MovieServiceClient movieServiceClient;
-
-
-    @Autowired
     private RatingRepository ratingRepository;
-
-    @Autowired
     private ModelMapper modelMapper;
 
 
@@ -77,7 +69,8 @@ public class RatingServiceImpl implements RatingService {
         validateUserAccess(userId);
         validateMovieExistence(movieId);
 
-        Rating ratingByUserAndMovie = this.ratingRepository.findByMovieIdAndUserId(movieId,userId);
+        Rating ratingByUserAndMovie = this.ratingRepository.findByMovieIdAndUserId(movieId,userId)
+                .orElseThrow(()-> new GenericException("No rating is submitted by given user to the movie", HttpStatus.NOT_FOUND));
 
 
         return RatingResponseDTO.builder()
@@ -93,11 +86,8 @@ public class RatingServiceImpl implements RatingService {
         validateUserAccess(userId);
         validateMovieExistence(movieId);
 
-        Rating ratingByUserAndMovie = this.ratingRepository.findByMovieIdAndUserId(movieId,userId);
-
-        if(ratingByUserAndMovie!=null){
-            this.ratingRepository.delete(ratingByUserAndMovie);
-        }
+        this.ratingRepository.findByMovieIdAndUserId(movieId, userId)
+                .ifPresent(ratingByUserAndMovie -> this.ratingRepository.delete(ratingByUserAndMovie));
     }
 
 
