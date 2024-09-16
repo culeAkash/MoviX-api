@@ -42,17 +42,25 @@ public class ReviewController {
         return ResponseEntity.ok().body(reviewResponseDTOS);
     }
 
-    @PutMapping("/updateReview/user/{userId}/movie/{movieId}")
+    @PutMapping("/updateReview/{reviewId}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<ReviewDTO> updateReview(@RequestBody ReviewDTO reviewDTO, @PathVariable("userId") Long userId,@PathVariable("movieId")Long movieId){
-        ReviewDTO updatedReviewDTO = this.reviewService.updateReview(reviewDTO,userId,movieId);
+    public ResponseEntity<ReviewDTO> updateReview(@RequestBody ReviewDTO reviewDTO, @PathVariable("reviewId") Long reviewId){
+        ReviewDTO updatedReviewDTO = this.reviewService.updateReview(reviewDTO,reviewId);
         return new ResponseEntity<>(updatedReviewDTO, HttpStatus.OK);
     }
 
-    @DeleteMapping("/deleteReview/user/{userId}/movie/{movieId}")
+    @DeleteMapping("/deleteReview/{reviewId}")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<Void> deleteReview(@PathVariable("userId") Long userId,@PathVariable("movieId") Long movieId){
-        this.reviewService.deleteReview(userId,movieId);
+    public ResponseEntity<Void> deleteReview(@PathVariable("reviewId") Long reviewId){
+        this.reviewService.deleteReview(reviewId);
+        return ResponseEntity.noContent().build();
+    }
+
+
+    @DeleteMapping("/deleteReviewsForMovie/movie/{movieId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteReviewsByMovieId(@PathVariable("movieId") Long movieId){
+        this.reviewService.deleteReviewsByMovieId(movieId);
         return ResponseEntity.noContent().build();
     }
 

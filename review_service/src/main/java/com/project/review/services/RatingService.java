@@ -16,5 +16,8 @@ public interface RatingService {
     public RatingResponseDTO getAllRatingsOfMovie(Long movieId);
 
     // delete Rating of User on Movie
-    public void deleteRatingByUserAndMovie(Long userId,Long movieId);
+    public void deleteRatingByUserAndMovie(Long ratingId);
+
+
+    public void deleteRatingsByMovieId(Long movieId);
 }

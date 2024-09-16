@@ -2,7 +2,10 @@ package com.project.movie.services.impl;
 
 import java.util.List;
 
+import com.project.movie.client.FileServiceClient;
+import com.project.movie.client.ReviewServiceClient;
 import com.project.movie.payloads.MovieDTO;
+import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,21 +16,30 @@ import com.project.movie.entities.Movie;
 import com.project.movie.exceptions.ResourceNotFoundException;
 import com.project.movie.repositories.MovieRepository;
 import com.project.movie.services.MovieService;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
+@AllArgsConstructor
 public class MovieServiceImpl implements MovieService {
-	
-	Logger logger = LoggerFactory.getLogger(MovieServiceImpl.class);
 
-	@Autowired
+
 	private MovieRepository movieRepository;
-	
-	@Autowired
+
 	private ModelMapper modelMapper;
+
+	private FileServiceClient fileServiceClient;
+
+	private ReviewServiceClient reviewServiceClient;
 
 
 	@Override
-	public MovieDTO createNewMovie(MovieDTO movie) {
+	public MovieDTO createNewMovie(MovieDTO movie, MultipartFile image) {
+
+		if(image!=null) {
+			String imageUrl = this.fileServiceClient.uploadImageToFileSystem(image).getBody();
+			movie.setImageUrl(imageUrl);
+		}
+
 		Movie newMovie = modelMapper.map(movie,Movie.class);
 		Movie createdMovie = this.movieRepository.save(newMovie);
 
@@ -38,9 +50,11 @@ public class MovieServiceImpl implements MovieService {
 	public List<MovieDTO> getAllMovies() {
 		List<Movie> allMovies = this.movieRepository.findAll();
 
-        return allMovies.stream()
-				.map(movie -> modelMapper.map(movie,MovieDTO.class))
-				.toList();
+		return allMovies.stream().map(movie -> {
+			MovieDTO movieDTO = modelMapper.map(movie, MovieDTO.class);
+			movieDTO.setRatingResponse(this.reviewServiceClient.getAverageRating(movieDTO.getMovieId()));
+			return movieDTO;
+		}).toList();
 	}
 
 
@@ -48,7 +62,13 @@ public class MovieServiceImpl implements MovieService {
 	public MovieDTO getMovieById(Long movieId) {
 		Movie movieById = this.movieRepository.findById(movieId)
 				.orElseThrow(() -> new ResourceNotFoundException("Movie","Movie ID",movieId));
-		return modelMapper.map(movieById,MovieDTO.class);
+
+
+
+		MovieDTO movieDTO =  modelMapper.map(movieById,MovieDTO.class);
+		movieDTO.setRatingResponse(this.reviewServiceClient.getAverageRating(movieId));
+
+		return movieDTO;
 	}
 
 
@@ -60,7 +80,11 @@ public class MovieServiceImpl implements MovieService {
 			throw new ResourceNotFoundException("Movie", "field", directorOrMovieName);
 		}
 
-		return movies.stream().map(movie->modelMapper.map(movie,MovieDTO.class)).toList();
+		return movies.stream().map(movie -> {
+			MovieDTO movieDTO = modelMapper.map(movie, MovieDTO.class);
+			movieDTO.setRatingResponse(this.reviewServiceClient.getAverageRating(movieDTO.getMovieId()));
+			return movieDTO;
+		}).toList();
 
 	}
 
@@ -70,11 +94,17 @@ public class MovieServiceImpl implements MovieService {
 	public void deleteMovie(Long movieId) {
 		Movie deletedMovie = movieRepository.findById(movieId)
 				.orElseThrow(()->new ResourceNotFoundException("Movie", "movieId", movieId));
+
+		this.fileServiceClient.deleteImageFromFileSystem(deletedMovie.getImageUrl());
+		this.reviewServiceClient.deleteRatingsForMovie(movieId);
+		this.reviewServiceClient.deleteReviewsForMovie(movieId);
+
+
 		this.movieRepository.delete(deletedMovie);
     }
 
 	@Override
-	public MovieDTO updateMovie(Long movieId, MovieDTO movie) {
+	public MovieDTO updateMovie(Long movieId, MovieDTO movie,MultipartFile image) {
 		Movie toUpdateMovie = movieRepository.findById(movieId)
 				.orElseThrow(() -> new ResourceNotFoundException("Movie", "movieId", movieId));
 
@@ -88,6 +118,12 @@ public class MovieServiceImpl implements MovieService {
 			toUpdateMovie.setImageUrl(movie.getImageUrl());
 		if(movie.getVideoUrl()!=null)
 			toUpdateMovie.setVideoUrl(movie.getVideoUrl());
+
+		if(image!=null) {
+			this.fileServiceClient.deleteImageFromFileSystem(toUpdateMovie.getImageUrl());
+			String imageUrl = this.fileServiceClient.uploadImageToFileSystem(image).getBody();
+			toUpdateMovie.setImageUrl(imageUrl);
+		}
 
 		movieRepository.save(toUpdateMovie);
 		return modelMapper.map(toUpdateMovie,MovieDTO.class);

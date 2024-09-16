@@ -11,6 +11,8 @@ import com.project.review.payloads.ReviewResponseDTO;
 import com.project.review.payloads.UserDTO;
 import com.project.review.repositories.ReviewRepository;
 import com.project.review.services.ReviewService;
+import com.project.review.utils.AccessUtils;
+import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,36 +21,28 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.AccessibleObject;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.project.review.utils.AccessUtils.validateMovieExistence;
-import static com.project.review.utils.AccessUtils.validateUserAccess;
-
 @Service
+@AllArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
 
-    @Autowired
-    private UserServiceClient userServiceClient;
 
-
-    @Autowired
-    private MovieServiceClient movieServiceClient;
-
-
-    @Autowired
     private ReviewRepository reviewRepository;
 
-    @Autowired
     private ModelMapper modelMapper;
+
+    private AccessUtils accessUtils;
 
 
     @Override
     public ReviewDTO createNewReview(ReviewDTO reviewDTO, Long userId, Long movieId) {
-        UserDTO userDTO = validateUserAccess(userId);
-        MovieDTO movieDTO = validateMovieExistence(movieId);
+        UserDTO userDTO = accessUtils.validateUserAccess(userId);
+        MovieDTO movieDTO = accessUtils.validateMovieExistence(movieId);
 
         Review newReview = Review.builder()
                 .reviewContent(reviewDTO.getReviewContent())
@@ -63,8 +57,8 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public ReviewResponseDTO getReviewOfMovieByUser(Long userId, Long movieId) {
-        UserDTO userDTO = validateUserAccess(userId);
-        MovieDTO movieDTO = validateMovieExistence(movieId);
+        UserDTO userDTO = accessUtils.validateUserAccess(userId);
+        MovieDTO movieDTO = accessUtils.validateMovieExistence(movieId);
 
         Review reviewByUserAndMovie = this.reviewRepository.findByMovieIdAndUserId(movieDTO.getMovieId(),userDTO.getUserId())
                 .orElseThrow(()-> new GenericException("No review is submitted by given user to the movie", HttpStatus.NOT_FOUND));
@@ -82,7 +76,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public List<ReviewResponseDTO> getAllReviewsOfMovie(Long movieId) {
-        validateMovieExistence(movieId);
+        accessUtils.validateMovieExistence(movieId);
 
         List<Review> reviewsOfMovie  = this.reviewRepository.findByMovieId(movieId);
 
@@ -92,16 +86,13 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public ReviewDTO updateReview(ReviewDTO reviewDTO, Long userId, Long movieId) {
-        validateMovieExistence(movieId);
-        validateUserAccess(userId);
+    public ReviewDTO updateReview(ReviewDTO reviewDTO, Long reviewId) {
 
-        if(!Objects.equals(reviewDTO.getUserId(), userId)){
-            throw new GenericException("User is not authorized to update the review", HttpStatus.UNAUTHORIZED);
-        }
+        Review toUpdateReview = this.reviewRepository.findById(reviewId)
+                .orElseThrow(()-> new GenericException("No review is submitted by given reviewId", HttpStatus.NOT_FOUND));
 
-        Review toUpdateReview = this.reviewRepository.findByMovieIdAndUserId(movieId,userId)
-                .orElseThrow(()-> new GenericException("No review is submitted by given user to the movie", HttpStatus.NOT_FOUND));
+
+        accessUtils.validateUserAccess(toUpdateReview.getUserId());
 
         toUpdateReview.setReviewContent(reviewDTO.getReviewContent());
 
@@ -111,10 +102,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public void deleteReview(Long userId, Long movieId) {
-        validateMovieExistence(movieId);
-        validateUserAccess(userId);
-
+    public void deleteReview(Long reviewId) {
         // check if the user is ADMIN or USER
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -125,20 +113,22 @@ public class ReviewServiceImpl implements ReviewService {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
-        Review reviewByUserForMovie = this.reviewRepository.findByMovieIdAndUserId(movieId,userId)
-                .orElseThrow(()-> new GenericException("No review is submitted by given user to the movie", HttpStatus.NOT_FOUND));
+        Review reviewByUserForMovie = this.reviewRepository.findById(reviewId)
+                .orElseThrow(()-> new GenericException("No review is present with this reviewId", HttpStatus.NOT_FOUND));
 
-        if(roles.contains("ROLE_ADMIN")){
-            this.reviewRepository.delete(reviewByUserForMovie);
-        }
-        else if(roles.contains("ROLE_USER") && Objects.equals(userId, reviewByUserForMovie.getUserId())) {
+        this.accessUtils.validateUserAccess(reviewByUserForMovie.getUserId());
+
+        if(roles.contains("ROLE_ADMIN") || roles.contains("ROLE_USER")) {
             this.reviewRepository.delete(reviewByUserForMovie);
         }
         else{
             throw new GenericException("User is not authorized to delete the review", HttpStatus.UNAUTHORIZED);
         }
+    }
 
-
-        }
+    @Override
+    public void deleteReviewsByMovieId(Long movieId) {
+        this.reviewRepository.deleteAllByMovieId(movieId);
+    }
 
 }

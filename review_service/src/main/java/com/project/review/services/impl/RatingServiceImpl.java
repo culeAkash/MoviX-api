@@ -8,18 +8,16 @@ import com.project.review.payloads.RatingResponseDTO;
 import com.project.review.payloads.UserDTO;
 import com.project.review.repositories.RatingRepository;
 import com.project.review.services.RatingService;
+import com.project.review.utils.AccessUtils;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 
-import static com.project.review.utils.AccessUtils.validateMovieExistence;
-import static com.project.review.utils.AccessUtils.validateUserAccess;
 
 @Service
 @AllArgsConstructor
@@ -28,12 +26,13 @@ public class RatingServiceImpl implements RatingService {
 
     private RatingRepository ratingRepository;
     private ModelMapper modelMapper;
+    private AccessUtils accessUtils;
 
 
     @Override
     public RatingDTO createRating(RatingDTO ratingDTO, Long userId, Long movieId) {
-        UserDTO userDTO = validateUserAccess(userId);
-        MovieDTO movieDTO = validateMovieExistence(movieId);
+        UserDTO userDTO = accessUtils.validateUserAccess(userId);
+        MovieDTO movieDTO = accessUtils.validateMovieExistence(movieId);
 
         Rating newRating = Rating
                 .builder()
@@ -66,8 +65,8 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public RatingResponseDTO getRatingOfMovieByUser(Long userId, Long movieId) {
-        validateUserAccess(userId);
-        validateMovieExistence(movieId);
+        accessUtils.validateUserAccess(userId);
+        accessUtils.validateMovieExistence(movieId);
 
         Rating ratingByUserAndMovie = this.ratingRepository.findByMovieIdAndUserId(movieId,userId)
                 .orElseThrow(()-> new GenericException("No rating is submitted by given user to the movie", HttpStatus.NOT_FOUND));
@@ -82,14 +81,21 @@ public class RatingServiceImpl implements RatingService {
 
 
     @Override
-    public void deleteRatingByUserAndMovie(Long userId, Long movieId) {
-        validateUserAccess(userId);
-        validateMovieExistence(movieId);
+    public void deleteRatingByUserAndMovie(Long ratingId) {
 
-        this.ratingRepository.findByMovieIdAndUserId(movieId, userId)
-                .ifPresent(ratingByUserAndMovie -> this.ratingRepository.delete(ratingByUserAndMovie));
+        Rating toDeleteRating = this.ratingRepository.findById(ratingId)
+                .orElseThrow(()->new GenericException("No rating is found for the given Id", HttpStatus.NOT_FOUND));
+
+
+        accessUtils.validateUserAccess(toDeleteRating.getUserId());
+
+        this.ratingRepository.delete(toDeleteRating);
     }
 
+    @Override
+    public void deleteRatingsByMovieId(Long movieId) {
+        this.ratingRepository.deleteAllByMovieId(movieId);
+    }
 
 
 }

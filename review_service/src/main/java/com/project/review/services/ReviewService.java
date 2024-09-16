@@ -15,7 +15,9 @@ public interface ReviewService {
 
     public List<ReviewResponseDTO> getAllReviewsOfMovie(Long movieId);
 
-    public ReviewDTO updateReview(ReviewDTO reviewDTO,Long userId,Long movieId);
+    public ReviewDTO updateReview(ReviewDTO reviewDTO,Long reviewId);
 
-    public void deleteReview(Long userId,Long movieId);
+    public void deleteReview(Long reviewId);
+
+    public void deleteReviewsByMovieId(Long movieId);
 }

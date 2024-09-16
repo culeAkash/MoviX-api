@@ -16,7 +16,7 @@ import com.project.movie.entities.Movie;
 import com.project.movie.services.MovieService;
 
 import jakarta.validation.Valid;
-
+import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
@@ -32,8 +32,8 @@ public class MovieController {
 	// controller for creating new movies only by admin
 	@PostMapping()
 	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<MovieDTO> createNewMovie(@Valid @RequestBody MovieDTO movie){
-		MovieDTO createdMovie = this.movieService.createNewMovie(movie);
+	public ResponseEntity<MovieDTO> createNewMovie(@Valid @RequestBody MovieDTO movie,@RequestPart(required = false) MultipartFile image){
+		MovieDTO createdMovie = this.movieService.createNewMovie(movie,image);
 		return new ResponseEntity<>(createdMovie,HttpStatus.CREATED);
 	}
 
@@ -67,11 +67,13 @@ public class MovieController {
 	// update movie controller only accessable to admin
 	@PutMapping("/updateMovie/{movieId}")
 	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<MovieDTO> updateMovie(@PathVariable("movieId")Long movieId,@Valid @RequestBody MovieDTO movie){
+	public ResponseEntity<MovieDTO> updateMovie(@PathVariable("movieId")Long movieId,@Valid @RequestBody MovieDTO movie,@RequestPart(required = false) MultipartFile image){
 		logger.debug("The movie is to be updated has movieId {}",movieId);
-		MovieDTO updatedMovie = movieService.updateMovie(movieId, movie);
+		MovieDTO updatedMovie = movieService.updateMovie(movieId, movie,image);
 		logger.debug("The updated movie is {}",updatedMovie);
 		return new ResponseEntity<>(updatedMovie,HttpStatus.ACCEPTED);
 
 	}
+
+	
 }

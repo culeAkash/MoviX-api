@@ -29,5 +29,5 @@ public class MovieDTO {
     private String synopsis;
 
 
-    private RatingDto ratingDto;
+    private RatingResponse ratingResponse;
 }

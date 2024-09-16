@@ -3,6 +3,7 @@ package com.project.review.controllers;
 import com.project.review.payloads.RatingDTO;
 import com.project.review.payloads.RatingResponseDTO;
 import com.project.review.services.RatingService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,9 +14,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/ratings")
+@AllArgsConstructor
 public class RatingController {
 
-    @Autowired
+
     private RatingService ratingService;
 
     @PostMapping("/createRating/user/{userId}/movie/{movieId}")
@@ -25,7 +27,7 @@ public class RatingController {
         return new ResponseEntity<>(newRatingDTO, HttpStatus.CREATED);
     }
 
-    @GetMapping("/getAllRatings/movie/{movieId}")
+    @GetMapping("/getAverageRating/movie/{movieId}")
     public ResponseEntity<RatingResponseDTO> getAllRatingsOfMovie(@PathVariable("movieId") Long movieId){
         RatingResponseDTO averageRatingOfMovie =  this.ratingService.getAllRatingsOfMovie(movieId);
         return ResponseEntity.ok().body(averageRatingOfMovie);
@@ -40,10 +42,18 @@ public class RatingController {
 
 
 
-    @DeleteMapping("/deleteRating/user/{userId}/movie/{movieId}")
+    @DeleteMapping("/deleteRating/{ratingId}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Void> deleteRatingByUserAndMovie(@PathVariable("userId") Long userId,@PathVariable("movieId") Long movieId){
-        this.ratingService.deleteRatingByUserAndMovie(userId,movieId);
+    public ResponseEntity<Void> deleteRatingByUserAndMovie(@PathVariable("ratingId") Long ratingId){
+        this.ratingService.deleteRatingByUserAndMovie(ratingId);
+        return ResponseEntity.noContent().build();
+    }
+
+
+    @DeleteMapping("/deleteRatingsForMovie/movie/{movieId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteRatingsByMovieId(@PathVariable("movieId") Long movieId){
+        this.ratingService.deleteRatingsByMovieId(movieId);
         return ResponseEntity.noContent().build();
     }
 
